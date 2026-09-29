@@ -8,4 +8,5 @@ export const AUTH_MESSAGES = Object.freeze({
     PASSWORD_MIN_LENGTH: "Password must be at least 6 characters",
     PASSWORDS_DO_NOT_MATCH: "Passwords do not match",
     GENERIC_LOGIN_ERROR: "Invalid username or password",
+    REGISTRATION_SUCCESS: "Account created successfully. Please log in.",
 });

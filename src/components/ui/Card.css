@@ -26,3 +26,42 @@
     font-size: 13px;
     color: var(--text-secondary);
 }
+
+.alert-banner {
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: var(--spacing-medium);
+    text-align: center;
+}
+
+.alert-error {
+    background-color: var(--danger-light);
+    border: 1px solid var(--danger-border);
+    color: var(--danger-hover);
+}
+
+.alert-success {
+    background-color: var(--primary-light);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: var(--primary-hover);
+}
+
+.card-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: var(--spacing-large);
+}
+
+.card-actions > * {
+    flex: 1;
+}
+
+.card-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.5;
+    margin-bottom: var(--spacing-large);
+}

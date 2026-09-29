@@ -66,3 +66,34 @@
     color: var(--primary);
     font-weight: 600;
 }
+
+.header-user-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-greeting {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.nav-btn-logout {
+    background-color: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.nav-btn-logout:hover {
+    background-color: var(--border-subtle);
+    border-color: var(--border-hover);
+}

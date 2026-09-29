@@ -2,6 +2,11 @@ import { z } from "zod";
 import { AUTH_LIMITS } from "@/constants/limits";
 import { AUTH_MESSAGES } from "@/constants/messages";
 
+export const LOGIN_FIELDS = [
+    { id: "email", name: "email", label: "Email", type: "email" },
+    { id: "password", name: "password", label: "Password", type: "password" },
+];
+
 /**
  * Validation schema for the user login form.
  */
@@ -29,4 +34,17 @@ export function validateLoginField(fieldName, value) {
     }
     const result = fieldSchema.safeParse(value);
     return result.success ? "" : result.error.issues[0]?.message || "";
+}
+
+/**
+ * Maps flattened Zod errors to login form fields.
+ *
+ * @param {Object} fieldErrors - Flattened Zod error dictionary.
+ * @returns {Object} Field error map.
+ */
+export function mapLoginErrors(fieldErrors) {
+    return {
+        email: fieldErrors.email?.[0] || "",
+        password: fieldErrors.password?.[0] || "",
+    };
 }

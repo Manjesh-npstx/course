@@ -2,6 +2,25 @@ import { z } from "zod";
 import { AUTH_LIMITS } from "@/constants/limits";
 import { AUTH_MESSAGES } from "@/constants/messages";
 
+export const INITIAL_REGISTER_FORM = {
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+};
+
+export const REGISTER_FIELDS = [
+    { id: "name", name: "name", label: "Full Name", type: "text" },
+    { id: "email", name: "email", label: "Email", type: "email" },
+    { id: "password", name: "password", label: "Password", type: "password" },
+    {
+        id: "confirmPassword",
+        name: "confirmPassword",
+        label: "Confirm Password",
+        type: "password",
+    },
+];
+
 const baseRegisterSchema = z.object({
     name: z
         .string()
@@ -67,4 +86,26 @@ export function mapRegisterErrors(fieldErrors) {
         password: fieldErrors.password?.[0] || "",
         confirmPassword: fieldErrors.confirmPassword?.[0] || "",
     };
+}
+
+/**
+ * Calculates current field error and dependent confirmPassword error.
+ *
+ * @param {string} name - Field name.
+ * @param {string} value - Current field value.
+ * @param {Object} nextData - Current form state.
+ * @param {string} prevConfirmErr - Previous confirmPassword error.
+ * @returns {{ error: string, confirmErr: string }} Field error updates.
+ */
+export function getRegisterFieldErrors(name, value, nextData, prevConfirmErr) {
+    const error = validateRegisterField(name, value, nextData);
+    const confirmErr =
+        name === "password" && nextData.confirmPassword
+            ? validateRegisterField(
+                  "confirmPassword",
+                  nextData.confirmPassword,
+                  nextData
+              )
+            : prevConfirmErr;
+    return { error, confirmErr };
 }

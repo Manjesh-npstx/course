@@ -1,28 +1,26 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
+import { AUTH_MESSAGES } from "@/constants/messages";
 import { ROUTES } from "@/constants/routes";
 import {
+    INITIAL_REGISTER_FORM,
+    REGISTER_FIELDS,
+    getRegisterFieldErrors,
     mapRegisterErrors,
     registerSchema,
-    validateRegisterField,
 } from "@/features/auth/registerSchema";
-
-const INITIAL_FORM = { name: "", email: "", password: "", confirmPassword: "" };
-
-const REGISTER_FIELDS = [
-    { id: "name", label: "Full Name", type: "text" },
-    { id: "email", label: "Email", type: "email" },
-    { id: "password", label: "Password", type: "password" },
-    { id: "confirmPassword", label: "Confirm Password", type: "password" },
-];
+import { authService } from "@/services/authService";
 
 /** Registration page with real-time inline validation as user types. */
 function RegisterPage() {
-    const [formData, setFormData] = useState(INITIAL_FORM);
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState(INITIAL_REGISTER_FORM);
     const [errors, setErrors] = useState({});
+    const [serverError, setServerError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     function handleChange(event) {
@@ -30,25 +28,24 @@ function RegisterPage() {
         const nextData = { ...formData, [name]: value };
         setFormData(nextData);
 
-        const error = validateRegisterField(name, value, nextData);
-        const confirmErr =
-            name === "password" && nextData.confirmPassword
-                ? validateRegisterField(
-                      "confirmPassword",
-                      nextData.confirmPassword,
-                      nextData
-                  )
-                : errors.confirmPassword;
-
+        const errs = getRegisterFieldErrors(
+            name,
+            value,
+            nextData,
+            errors.confirmPassword
+        );
+        const { error, confirmErr } = errs;
         setErrors((prev) => ({
             ...prev,
             [name]: error,
             confirmPassword: confirmErr,
         }));
+        if (serverError) setServerError("");
     }
 
-    function handleSubmit(event) {
+    async function handleSubmit(event) {
         event.preventDefault();
+        setServerError("");
         const result = registerSchema.safeParse(formData);
 
         if (!result.success) {
@@ -58,28 +55,32 @@ function RegisterPage() {
 
         setErrors({});
         setIsSubmitting(true);
-        setTimeout(() => setIsSubmitting(false), 500);
+        try {
+            await authService.register(formData);
+            const state = { message: AUTH_MESSAGES.REGISTRATION_SUCCESS };
+            navigate(ROUTES.LOGIN, { state });
+        } catch (err) {
+            setServerError(err.message || "Registration failed");
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     return (
         <Card>
             <div className="card-header">
                 <h1 className="card-title">Create Account</h1>
-                <p className="card-subtitle">
-                    Get started with course enrollment today
-                </p>
+                <p className="card-subtitle">Sign up for course enrollment</p>
             </div>
+            <Alert>{serverError}</Alert>
             <form onSubmit={handleSubmit} noValidate>
-                {REGISTER_FIELDS.map((field) => (
+                {REGISTER_FIELDS.map((f) => (
                     <Input
-                        key={field.id}
-                        id={field.id}
-                        label={field.label}
-                        type={field.type}
-                        name={field.id}
-                        value={formData[field.id]}
+                        key={f.id}
+                        {...f}
+                        value={formData[f.id]}
                         onChange={handleChange}
-                        error={errors[field.id]}
+                        error={errors[f.id]}
                         disabled={isSubmitting}
                     />
                 ))}
