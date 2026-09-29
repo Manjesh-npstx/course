@@ -1,6 +1,28 @@
 .card {
-    padding: var(--spacing-large);
-    background: white;
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow-sm);
+    margin: 0 auto;
+}
+
+.card-header {
+    text-align: center;
+    margin-bottom: var(--spacing-large);
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+
+.card-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
 }

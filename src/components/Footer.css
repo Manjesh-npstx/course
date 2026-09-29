@@ -1,0 +1,17 @@
+.app-footer {
+    background-color: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: var(--spacing-medium) var(--spacing-large);
+    text-align: center;
+}
+
+.footer-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.footer-container p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-muted);
+}

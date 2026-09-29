@@ -19,7 +19,6 @@ function Button({ children, type, disabled, onClick }) {
             onClick={onClick}
         >
             {children}
-
         </button>
     );
 }

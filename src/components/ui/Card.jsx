@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import "./Card.css"
+import "./Card.css";
 /**
  * Reusable container for grouping related content.
  *

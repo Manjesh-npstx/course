@@ -1,21 +1,28 @@
 import PropTypes from "prop-types";
 import "./Input.css";
+
 /**
- * Reusable form input with an accessible label.
+ * Reusable form input with accessible label and inline error display.
  *
  * @param {Object} props
- * @param {string} props.id - Unique ID connecting the label to the input.
- * @param {string} props.label - Text shown above the input.
+ * @param {string} props.id - Unique ID connecting label to input.
+ * @param {string} props.label - Text shown in the label.
  * @param {string} props.type - HTML input type.
  * @param {string} props.name - Form field name.
  * @param {string} props.value - Current input value.
- * @param {Function} props.onChange - Function called when the value changes.
- * @param {string} props.error - Validation error message.
+ * @param {Function} props.onChange - Change handler.
+ * @param {string} props.error - Inline validation error message.
+ * @param {boolean} props.disabled - Whether input is disabled.
+ * @returns {JSX.Element}
  */
-function Input({ id, label, type, name, value, onChange, error }) {
+function Input({ id, label, type, name, value, onChange, error, disabled }) {
+    const hasError = Boolean(error);
+
     return (
-        <div classname="input-container">
-            <label htmlFor={id}>{label}</label>
+        <div className="input-container">
+            <label htmlFor={id} className="input-label">
+                {label}
+            </label>
 
             <input
                 id={id}
@@ -23,12 +30,14 @@ function Input({ id, label, type, name, value, onChange, error }) {
                 name={name}
                 value={value}
                 onChange={onChange}
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? `${id}-error` : undefined}
+                disabled={disabled}
+                className={`input-field ${hasError ? "input-error" : ""}`}
+                aria-invalid={hasError}
+                aria-describedby={hasError ? `${id}-error` : undefined}
             />
 
-            {error && (
-                <p id={`${id}-error`} role="alert">
+            {hasError && (
+                <p id={`${id}-error`} role="alert" className="error-text">
                     {error}
                 </p>
             )}
@@ -44,11 +53,13 @@ Input.propTypes = {
     value: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
     error: PropTypes.string,
+    disabled: PropTypes.bool,
 };
 
 Input.defaultProps = {
     type: "text",
     error: "",
+    disabled: false,
 };
 
 export default Input;
