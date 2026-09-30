@@ -1,22 +1,38 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import Badge from "@/components/common/Badge";
 import { APP_CONFIG } from "@/constants/config";
+import { ROLES } from "@/constants/roles";
 import { ROUTES } from "@/constants/routes";
-import { authService } from "@/services/authService";
-import { tokenStorage } from "@/services/tokenStorage";
+import { useAuth } from "@/hooks/useAuth";
 import "./Header.css";
 
 /**
- * Top navigation header displaying application brand and authentication state.
+ * Top navigation header displaying application brand, user info, and role badge.
  */
 function Header() {
     const location = useLocation();
     const navigate = useNavigate();
-    const isAuthenticated = tokenStorage.hasToken();
-    const user = tokenStorage.getUser();
+    const { isAuthenticated, user, logout, switchRole } = useAuth();
 
     function handleLogout() {
-        authService.logout();
+        logout();
         navigate(ROUTES.LOGIN);
+    }
+
+    async function handleSwitchRole() {
+        try {
+            await switchRole();
+        } catch {
+            // Error handled gracefully
+        }
+    }
+
+    function getRoleBadgeVariant(role) {
+        if (!role) return "default";
+        const normalized = role.toLowerCase();
+        if (normalized === ROLES.ADMIN) return "danger";
+        if (normalized === ROLES.INSTRUCTOR) return "primary";
+        return "success";
     }
 
     return (
@@ -30,8 +46,21 @@ function Header() {
                     {isAuthenticated ? (
                         <div className="header-user-nav">
                             <span className="user-greeting">
-                                {user?.name || "Student"}
+                                {user?.name || "User"}
+                                <Badge
+                                    variant={getRoleBadgeVariant(user?.role)}
+                                >
+                                    {user?.role || ROLES.STUDENT}
+                                </Badge>
                             </span>
+                            <button
+                                type="button"
+                                className="nav-btn-switch"
+                                onClick={handleSwitchRole}
+                                title="Cycle role for testing (Admin -> Instructor -> Student)"
+                            >
+                                Switch Role
+                            </button>
                             <button
                                 type="button"
                                 className="nav-btn-logout"

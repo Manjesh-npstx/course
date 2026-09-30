@@ -1,0 +1,29 @@
+.course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-medium);
+    margin-top: var(--spacing-medium);
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-xlarge) var(--spacing-medium);
+    color: var(--text-secondary);
+}
+
+.empty-state-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-small);
+}
+
+.empty-state-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 var(--spacing-small) 0;
+}
+
+.empty-state-text {
+    margin: 0;
+    font-size: 0.875rem;
+}

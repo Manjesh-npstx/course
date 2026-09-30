@@ -4,6 +4,9 @@
  */
 export const ROUTES = Object.freeze({
     HOME: "/",
+    COURSES: "/courses",
+    COURSE_DETAIL: (id) => `/courses/${id}`,
+    STUDENTS: "/students",
     LOGIN: "/login",
     REGISTER: "/register",
 });

@@ -1,0 +1,49 @@
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: var(--spacing-small);
+    transition: color 0.15s ease;
+}
+
+.back-link:hover {
+    color: var(--text);
+}
+
+.course-detail-header-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--spacing-large);
+    margin-bottom: var(--spacing-large);
+    box-shadow: var(--shadow-sm);
+}
+
+.course-detail-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--spacing-medium);
+}
+
+.course-detail-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small);
+    margin-bottom: var(--spacing-small);
+}
+
+.course-detail-meta {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.course-detail-seats {
+    margin-top: var(--spacing-medium);
+}

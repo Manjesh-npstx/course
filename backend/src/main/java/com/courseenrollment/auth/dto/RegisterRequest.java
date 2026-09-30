@@ -3,6 +3,7 @@ package com.courseenrollment.auth.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
@@ -17,9 +18,13 @@ public class RegisterRequest {
     @Email(message = "email must be an email")
     private String email;
 
-    @Schema(example = "password123", minLength = 6)
+    @Schema(example = "Pass@1234", minLength = 8)
     @NotBlank(message = "password should not be empty")
-    @Size(min = 6, message = "password must be longer than or equal to 6 characters")
+    @Size(min = 8, message = "password must be at least 8 characters")
+    @Pattern(
+        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$",
+        message = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    )
     private String password;
 
     @Schema(example = "student")

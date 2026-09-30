@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -48,28 +49,54 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("register should create user and return JWT token")
+    @DisplayName("register should create user with STUDENT role and return JWT token")
     void register_success() {
-        RegisterRequest req = new RegisterRequest("Admin", "admin@test.com", "pass123");
-        when(userRepository.existsByEmail("admin@test.com")).thenReturn(false);
-        when(passwordEncoder.encode("pass123")).thenReturn("$2a$10$hashed");
-        when(userRepository.save(any(User.class))).thenReturn(mockUser);
+        RegisterRequest req = new RegisterRequest("Student User", "student@test.com", "SecurePass@123");
+        User mockStudent = new User("student@test.com", "Student User", "$2a$10$hashed", UserRole.STUDENT);
+        mockStudent.setId(1L);
+
+        when(userRepository.existsByEmail("student@test.com")).thenReturn(false);
+        when(passwordEncoder.encode("SecurePass@123")).thenReturn("$2a$10$hashed");
+        when(userRepository.save(any(User.class))).thenReturn(mockStudent);
 
         AuthResponse res = authService.register(req);
 
         assertThat(res).isNotNull();
-        assertThat(res.getUser().getName()).isEqualTo("Admin");
-        assertThat(res.getUser().getEmail()).isEqualTo("admin@test.com");
+        assertThat(res.getUser().getName()).isEqualTo("Student User");
+        assertThat(res.getUser().getEmail()).isEqualTo("student@test.com");
+        assertThat(res.getUser().getRole()).isEqualTo("student");
         assertThat(res.getToken()).isNotBlank();
         assertThat(jwtService.isTokenValid(res.getToken())).isTrue();
-        assertThat(jwtService.extractEmail(res.getToken())).isEqualTo("admin@test.com");
-        verify(userRepository).save(any(User.class));
+        assertThat(jwtService.extractEmail(res.getToken())).isEqualTo("student@test.com");
+        assertThat(jwtService.extractRole(res.getToken())).isEqualTo("student");
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        assertThat(userCaptor.getValue().getRole()).isEqualTo(UserRole.STUDENT);
+    }
+
+    @Test
+    @DisplayName("register should ignore requested ADMIN role and default to STUDENT")
+    void register_ignoresAdminRole() {
+        RegisterRequest req = new RegisterRequest("Hacker", "hacker@test.com", "SecurePass@123", "admin");
+        User mockStudent = new User("hacker@test.com", "Hacker", "$2a$10$hashed", UserRole.STUDENT);
+        mockStudent.setId(2L);
+
+        when(userRepository.existsByEmail("hacker@test.com")).thenReturn(false);
+        when(passwordEncoder.encode("SecurePass@123")).thenReturn("$2a$10$hashed");
+        when(userRepository.save(any(User.class))).thenReturn(mockStudent);
+
+        authService.register(req);
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        assertThat(userCaptor.getValue().getRole()).isEqualTo(UserRole.STUDENT);
     }
 
     @Test
     @DisplayName("register should throw ConflictException on duplicate email")
     void register_duplicateEmail() {
-        RegisterRequest req = new RegisterRequest("Dup", "admin@test.com", "pass123");
+        RegisterRequest req = new RegisterRequest("Dup", "admin@test.com", "SecurePass@123");
         when(userRepository.existsByEmail("admin@test.com")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(req))

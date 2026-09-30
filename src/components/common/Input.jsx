@@ -15,8 +15,19 @@ import "./Input.css";
  * @param {boolean} props.disabled - Whether input is disabled.
  * @returns {JSX.Element}
  */
-function Input({ id, label, type, name, value, onChange, error, disabled }) {
+function Input({
+    id,
+    label,
+    type,
+    name,
+    value,
+    onChange,
+    error,
+    disabled,
+    helperText,
+}) {
     const hasError = Boolean(error);
+    const hasHelper = Boolean(helperText) && !hasError;
 
     return (
         <div className="input-container">
@@ -33,8 +44,20 @@ function Input({ id, label, type, name, value, onChange, error, disabled }) {
                 disabled={disabled}
                 className={`input-field ${hasError ? "input-error" : ""}`}
                 aria-invalid={hasError}
-                aria-describedby={hasError ? `${id}-error` : undefined}
+                aria-describedby={
+                    hasError
+                        ? `${id}-error`
+                        : hasHelper
+                          ? `${id}-helper`
+                          : undefined
+                }
             />
+
+            {hasHelper && (
+                <p id={`${id}-helper`} className="helper-text">
+                    {helperText}
+                </p>
+            )}
 
             {hasError && (
                 <p id={`${id}-error`} role="alert" className="error-text">
@@ -54,12 +77,14 @@ Input.propTypes = {
     onChange: PropTypes.func.isRequired,
     error: PropTypes.string,
     disabled: PropTypes.bool,
+    helperText: PropTypes.string,
 };
 
 Input.defaultProps = {
     type: "text",
     error: "",
     disabled: false,
+    helperText: "",
 };
 
 export default Input;

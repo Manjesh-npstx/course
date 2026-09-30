@@ -1,0 +1,201 @@
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 10;
+}
+
+.sidebar-header {
+    padding: var(--spacing-large) var(--spacing-medium);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-logo {
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin: 0;
+}
+
+.sidebar-nav {
+    padding: var(--spacing-small);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.sidebar-link:hover {
+    background-color: var(--border-subtle);
+    color: var(--text);
+}
+
+.sidebar-link.active {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding: var(--spacing-medium) var(--spacing-small);
+    border-top: 1px solid var(--border);
+}
+
+.sidebar-user {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    padding: 0 4px;
+}
+
+.sidebar-user-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.sidebar-user-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+    display: block;
+}
+
+.sidebar-btn-logout {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        color 0.15s,
+        background-color 0.15s;
+}
+
+.sidebar-btn-logout:hover {
+    color: var(--danger);
+    background-color: var(--danger-light);
+}
+
+.sidebar-role-switch {
+    margin-top: var(--spacing-small);
+}
+
+.sidebar-role-switch-title {
+    font-size: 0.625rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.sidebar-role-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.role-switch-btn {
+    flex: 1;
+    padding: 4px 6px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.role-switch-btn:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+}
+
+.role-switch-btn.active {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    font-weight: 600;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    padding: var(--spacing-large) var(--spacing-xlarge);
+    max-width: 1200px;
+    width: calc(100% - var(--sidebar-width));
+}
+
+.mode-banner {
+    padding: 12px var(--spacing-medium);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-large);
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+}
+
+.mode-banner-student {
+    background: var(--primary-light);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: #1e40af;
+}
+
+.mode-banner-instructor {
+    background: var(--info-light);
+    border: 1px solid var(--info-border);
+    color: #4338ca;
+}
+
+.mode-banner-admin {
+    background: var(--warning-light);
+    border: 1px solid var(--warning-border);
+    color: #92400e;
+}

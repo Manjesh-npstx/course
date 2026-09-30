@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import Alert from "@/components/ui/Alert";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Input from "@/components/ui/Input";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import Alert from "@/components/common/Alert";
+import Button from "@/components/common/Button";
+import Card from "@/components/common/Card";
+import Input from "@/components/common/Input";
 import { AUTH_MESSAGES } from "@/constants/messages";
 import { ROUTES } from "@/constants/routes";
 import {
@@ -13,11 +13,13 @@ import {
     mapRegisterErrors,
     registerSchema,
 } from "@/features/auth/registerSchema";
-import { authService } from "@/services/authService";
+import PasswordRequirements from "@/features/auth/PasswordRequirements";
+import { useAuth } from "@/hooks/useAuth";
 
 /** Registration page with real-time inline validation as user types. */
 function RegisterPage() {
     const navigate = useNavigate();
+    const { register, isAuthenticated } = useAuth();
     const [formData, setFormData] = useState(INITIAL_REGISTER_FORM);
     const [errors, setErrors] = useState({});
     const [serverError, setServerError] = useState("");
@@ -56,7 +58,7 @@ function RegisterPage() {
         setErrors({});
         setIsSubmitting(true);
         try {
-            await authService.register(formData);
+            await register(formData);
             const state = { message: AUTH_MESSAGES.REGISTRATION_SUCCESS };
             navigate(ROUTES.LOGIN, { state });
         } catch (err) {
@@ -64,6 +66,10 @@ function RegisterPage() {
         } finally {
             setIsSubmitting(false);
         }
+    }
+
+    if (isAuthenticated) {
+        return <Navigate to={ROUTES.COURSES} replace />;
     }
 
     return (
@@ -75,14 +81,20 @@ function RegisterPage() {
             <Alert>{serverError}</Alert>
             <form onSubmit={handleSubmit} noValidate>
                 {REGISTER_FIELDS.map((f) => (
-                    <Input
-                        key={f.id}
-                        {...f}
-                        value={formData[f.id]}
-                        onChange={handleChange}
-                        error={errors[f.id]}
-                        disabled={isSubmitting}
-                    />
+                    <div key={f.id}>
+                        <Input
+                            {...f}
+                            value={formData[f.id]}
+                            onChange={handleChange}
+                            error={errors[f.id]}
+                            disabled={isSubmitting}
+                        />
+                        {f.id === "password" && (
+                            <PasswordRequirements
+                                password={formData.password}
+                            />
+                        )}
+                    </div>
                 ))}
                 <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? "Registering..." : "Register"}

@@ -35,12 +35,13 @@ public class AuthService {
             throw new ConflictException("Email already registered");
         }
 
-        UserRole role;
+        UserRole role = UserRole.STUDENT;
         if (req.getRole() != null && !req.getRole().trim().isEmpty()) {
-            role = UserRole.fromValue(req.getRole().trim());
-        } else {
-            // Default to ADMIN so all users can manage courses and students immediately
-            role = UserRole.ADMIN;
+            UserRole requestedRole = UserRole.fromValue(req.getRole().trim());
+            // Prevent privilege escalation via public registration
+            if (requestedRole != UserRole.ADMIN) {
+                role = requestedRole;
+            }
         }
 
         String hashedPassword = passwordEncoder.encode(req.getPassword());

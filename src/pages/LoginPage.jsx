@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import Alert from "@/components/ui/Alert";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Input from "@/components/ui/Input";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import Alert from "@/components/common/Alert";
+import Button from "@/components/common/Button";
+import Card from "@/components/common/Card";
+import Input from "@/components/common/Input";
 import { AUTH_MESSAGES } from "@/constants/messages";
 import { ROUTES } from "@/constants/routes";
 import {
@@ -12,17 +12,19 @@ import {
     mapLoginErrors,
     validateLoginField,
 } from "@/features/auth/loginSchema";
-import { authService } from "@/services/authService";
+import { useAuth } from "@/hooks/useAuth";
 
 /** Login page with real-time inline validation as user types. */
 function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { login, isAuthenticated } = useAuth();
     const [formData, setFormData] = useState({ email: "", password: "" });
     const [errors, setErrors] = useState({});
     const [serverError, setServerError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const successMessage = location.state?.message || "";
+    const redirectPath = location.state?.from || ROUTES.COURSES;
 
     function handleChange(event) {
         const { name, value } = event.target;
@@ -45,13 +47,17 @@ function LoginPage() {
         setErrors({});
         setIsSubmitting(true);
         try {
-            await authService.login(formData);
-            navigate(ROUTES.HOME);
+            await login(formData);
+            navigate(redirectPath, { replace: true });
         } catch (err) {
             setServerError(err.message || AUTH_MESSAGES.GENERIC_LOGIN_ERROR);
         } finally {
             setIsSubmitting(false);
         }
+    }
+
+    if (isAuthenticated) {
+        return <Navigate to={ROUTES.COURSES} replace />;
     }
 
     return (

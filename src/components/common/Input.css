@@ -54,3 +54,10 @@
     font-size: 12px;
     font-weight: 500;
 }
+
+.helper-text {
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.4;
+}

@@ -21,17 +21,48 @@ export const REGISTER_FIELDS = [
     },
 ];
 
+export const PASSWORD_RULES = Object.freeze([
+    {
+        id: "length",
+        label: "At least 8 characters",
+        check: (pwd) => pwd.length >= 8,
+    },
+    {
+        id: "uppercase",
+        label: "At least one uppercase letter (A-Z)",
+        check: (pwd) => /[A-Z]/.test(pwd),
+    },
+    {
+        id: "lowercase",
+        label: "At least one lowercase letter (a-z)",
+        check: (pwd) => /[a-z]/.test(pwd),
+    },
+    {
+        id: "number",
+        label: "At least one number (0-9)",
+        check: (pwd) => /[0-9]/.test(pwd),
+    },
+    {
+        id: "special",
+        label: "At least one special character (e.g. @, #, $, !)",
+        check: (pwd) => /[^A-Za-z0-9]/.test(pwd),
+    },
+]);
+
+export const passwordSchema = z
+    .string()
+    .min(AUTH_LIMITS.PASSWORD_MIN_LENGTH, AUTH_MESSAGES.PASSWORD_MIN_LENGTH)
+    .regex(/[A-Z]/, AUTH_MESSAGES.PASSWORD_UPPERCASE)
+    .regex(/[a-z]/, AUTH_MESSAGES.PASSWORD_LOWERCASE)
+    .regex(/[0-9]/, AUTH_MESSAGES.PASSWORD_NUMBER)
+    .regex(/[^A-Za-z0-9]/, AUTH_MESSAGES.PASSWORD_SPECIAL);
+
 const baseRegisterSchema = z.object({
     name: z
         .string()
         .min(AUTH_LIMITS.NAME_MIN_LENGTH, AUTH_MESSAGES.NAME_REQUIRED),
     email: z.string().email(AUTH_MESSAGES.EMAIL_INVALID),
-    password: z
-        .string()
-        .min(
-            AUTH_LIMITS.PASSWORD_MIN_LENGTH,
-            AUTH_MESSAGES.PASSWORD_MIN_LENGTH
-        ),
+    password: passwordSchema,
     confirmPassword: z.string(),
 });
 
@@ -57,7 +88,7 @@ export const registerSchema = baseRegisterSchema.refine(
 export function validateRegisterField(fieldName, value, allValues) {
     if (fieldName === "confirmPassword") {
         if (!value) {
-            return AUTH_MESSAGES.PASSWORD_MIN_LENGTH;
+            return AUTH_MESSAGES.CONFIRM_PASSWORD_REQUIRED;
         }
         if (allValues && value !== allValues.password) {
             return AUTH_MESSAGES.PASSWORDS_DO_NOT_MATCH;
