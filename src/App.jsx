@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import PageLayout from "@/components/layout/PageLayout";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
+import { ROLES } from "@/constants/roles";
 import { ROUTES } from "@/constants/routes";
 import { AuthProvider } from "@/context/AuthProvider";
 import CourseDetailPage from "@/pages/CourseDetailPage";
@@ -56,7 +57,16 @@ function App() {
                         />
                         <Route
                             path={ROUTES.STUDENTS}
-                            element={<StudentsPage />}
+                            element={
+                                <ProtectedRoute
+                                    allowedRoles={[
+                                        ROLES.ADMIN,
+                                        ROLES.INSTRUCTOR,
+                                    ]}
+                                >
+                                    <StudentsPage />
+                                </ProtectedRoute>
+                            }
                         />
                         <Route
                             path={ROUTES.HOME}

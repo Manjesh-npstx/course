@@ -225,13 +225,27 @@ class CourseServiceTest {
     }
 
     @Test
-    @DisplayName("remove should delete course")
+    @DisplayName("remove should delete course when no students are enrolled")
     void remove_success() {
         when(courseRepository.findById(1L)).thenReturn(Optional.of(mockCourse));
+        when(studentRepository.countByCourseId(1L)).thenReturn(0L);
 
         courseService.remove(1L);
 
         verify(courseRepository).delete(mockCourse);
+    }
+
+    @Test
+    @DisplayName("remove should throw ConflictException when students are enrolled")
+    void remove_hasEnrolledStudents_throwsConflict() {
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(mockCourse));
+        when(studentRepository.countByCourseId(1L)).thenReturn(3L);
+
+        assertThatThrownBy(() -> courseService.remove(1L))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("Cannot delete course with active student enrollments");
+
+        verify(courseRepository, never()).delete(any(Course.class));
     }
 
     @Test

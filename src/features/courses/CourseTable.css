@@ -87,3 +87,13 @@
     background-color: var(--danger-light);
     color: var(--danger);
 }
+
+.icon-action-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.icon-action-btn:disabled:hover {
+    background-color: transparent;
+    color: var(--text-muted);
+}

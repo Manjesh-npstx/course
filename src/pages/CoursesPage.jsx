@@ -127,6 +127,19 @@ export function CoursesPage() {
 
     async function handleDeleteConfirm() {
         if (!deleteCourse) return;
+        const enrolledCount = deleteCourse.students
+            ? deleteCourse.students.length
+            : 0;
+        if (enrolledCount > 0) {
+            setToast({
+                message:
+                    "Cannot delete course with active student enrollments. Please unenroll all students first.",
+                type: "error",
+            });
+            setDeleteCourse(null);
+            return;
+        }
+
         try {
             await courseService.deleteCourse(deleteCourse.id);
             setToast({
@@ -135,11 +148,12 @@ export function CoursesPage() {
             });
             setDeleteCourse(null);
             reload();
-        } catch {
+        } catch (err) {
             setToast({
-                message: "Failed to delete course",
+                message: err.message || "Failed to delete course",
                 type: "error",
             });
+            setDeleteCourse(null);
         }
     }
 

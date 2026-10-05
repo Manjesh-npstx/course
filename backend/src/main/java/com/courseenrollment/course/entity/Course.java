@@ -32,7 +32,7 @@ public class Course {
     @Column
     private String instructorEmail;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "course", fetch = FetchType.EAGER)
     @JsonIgnoreProperties({"course", "students"})
     @OrderBy("createdAt DESC")
     private List<Student> students = new ArrayList<>();

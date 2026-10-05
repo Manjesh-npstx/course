@@ -70,6 +70,12 @@ export function CourseCard({
                     <Button
                         size="small"
                         variant="secondary"
+                        disabled={(course.students?.length || 0) > 0}
+                        title={
+                            (course.students?.length || 0) > 0
+                                ? "Cannot delete course with active student enrollments"
+                                : "Delete Course"
+                        }
                         onClick={() => onDelete && onDelete(course.id)}
                     >
                         Delete

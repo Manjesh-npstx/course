@@ -143,7 +143,12 @@ export function CourseTable({
                                                 <button
                                                     type="button"
                                                     className="icon-action-btn icon-action-btn-danger"
-                                                    title="Delete Course"
+                                                    title={
+                                                        enrolledCount > 0
+                                                            ? "Cannot delete course with active student enrollments"
+                                                            : "Delete Course"
+                                                    }
+                                                    disabled={enrolledCount > 0}
                                                     onClick={() =>
                                                         onDelete(course)
                                                     }

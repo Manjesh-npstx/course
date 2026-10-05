@@ -220,6 +220,10 @@ public class CourseService {
     @Transactional
     public void remove(Long id) {
         Course course = findOne(id);
+        long enrolledCount = studentRepository.countByCourseId(id);
+        if (enrolledCount > 0) {
+            throw new ConflictException("Cannot delete course with active student enrollments. Please unenroll all students first.");
+        }
         courseRepository.delete(course);
         courseRepository.flush();
     }
