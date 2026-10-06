@@ -2,6 +2,7 @@ package com.courseenrollment.student;
 
 import com.courseenrollment.auth.entity.User;
 import com.courseenrollment.auth.enums.UserRole;
+import com.courseenrollment.auth.enums.UserStatus;
 import com.courseenrollment.auth.repository.UserRepository;
 import com.courseenrollment.common.dto.PaginatedResponse;
 import com.courseenrollment.common.exception.BadRequestException;
@@ -132,6 +133,22 @@ class StudentServiceTest {
         assertThatThrownBy(() -> studentService.create(req))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage("Only registered users with role 'STUDENT' can be enrolled in a course.");
+
+        verify(studentRepository, never()).save(any(Student.class));
+    }
+
+    @Test
+    @DisplayName("create should throw BadRequestException when student account is disabled")
+    void create_disabledStudent_throwsBadRequest() {
+        User disabledUser = new User("disabled@test.com", "Disabled", "password", UserRole.STUDENT, UserStatus.DISABLED);
+        CreateStudentRequest req = new CreateStudentRequest("Disabled", "disabled@test.com", null, 1L);
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(mockCourse));
+        when(studentRepository.countByCourseId(1L)).thenReturn(0L);
+        when(userRepository.findByEmail("disabled@test.com")).thenReturn(Optional.of(disabledUser));
+
+        assertThatThrownBy(() -> studentService.create(req))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessage("Cannot enroll a disabled student. Please enable the account first.");
 
         verify(studentRepository, never()).save(any(Student.class));
     }

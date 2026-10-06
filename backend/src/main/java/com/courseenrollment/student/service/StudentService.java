@@ -2,6 +2,7 @@ package com.courseenrollment.student.service;
 
 import com.courseenrollment.auth.entity.User;
 import com.courseenrollment.auth.enums.UserRole;
+import com.courseenrollment.auth.enums.UserStatus;
 import com.courseenrollment.auth.repository.UserRepository;
 import com.courseenrollment.common.dto.PageMeta;
 import com.courseenrollment.common.dto.PaginatedResponse;
@@ -57,6 +58,9 @@ public class StudentService {
                 .orElseThrow(() -> new BadRequestException("Student must be a registered user before enrolling."));
         if (user.getRole() != UserRole.STUDENT) {
             throw new BadRequestException("Only registered users with role 'STUDENT' can be enrolled in a course.");
+        }
+        if (user.getStatus() == UserStatus.DISABLED) {
+            throw new BadRequestException("Cannot enroll a disabled student. Please enable the account first.");
         }
 
         if (studentRepository.existsByEmailIgnoreCaseAndCourseId(email, req.getCourseId())) {
@@ -145,6 +149,9 @@ public class StudentService {
                     .orElseThrow(() -> new BadRequestException("Student must be a registered user before enrolling."));
             if (user.getRole() != UserRole.STUDENT) {
                 throw new BadRequestException("Only registered users with role 'STUDENT' can be enrolled in a course.");
+            }
+            if (user.getStatus() == UserStatus.DISABLED) {
+                throw new BadRequestException("Cannot transfer to a disabled student account. Please enable the account first.");
             }
 
             Long targetCourseId = (req.getCourseId() != null) ? req.getCourseId() : student.getCourse().getId();

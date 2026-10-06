@@ -1,21 +1,28 @@
 package com.courseenrollment.auth.dto;
 
 import com.courseenrollment.auth.enums.UserRole;
+import com.courseenrollment.auth.enums.UserStatus;
 
 public class UserDto {
     private Long id;
     private String name;
     private String email;
     private String role;
+    private String status;
 
     public UserDto() {
     }
 
     public UserDto(Long id, String name, String email, String role) {
+        this(id, name, email, role, UserStatus.ACTIVE.getValue());
+    }
+
+    public UserDto(Long id, String name, String email, String role, String status) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.role = role;
+        this.status = status;
     }
 
     public static UserDto fromEntity(com.courseenrollment.auth.entity.User user) {
@@ -23,7 +30,8 @@ public class UserDto {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRole() != null ? user.getRole().getValue() : UserRole.STUDENT.getValue()
+                user.getRole() != null ? user.getRole().getValue() : UserRole.STUDENT.getValue(),
+                user.getStatus() != null ? user.getStatus().getValue() : UserStatus.ACTIVE.getValue()
         );
     }
 
@@ -57,5 +65,13 @@ public class UserDto {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

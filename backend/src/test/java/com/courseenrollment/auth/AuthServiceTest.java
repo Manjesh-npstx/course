@@ -143,4 +143,17 @@ class AuthServiceTest {
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessage("Invalid username or password");
     }
+
+    @Test
+    @DisplayName("login should throw DisabledException when account status is DISABLED")
+    void login_disabledAccount() {
+        mockUser.setStatus(com.courseenrollment.auth.enums.UserStatus.DISABLED);
+        LoginRequest req = new LoginRequest("admin@test.com", "pass123");
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.matches("pass123", "$2a$10$hashed")).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.login(req))
+                .isInstanceOf(org.springframework.security.authentication.DisabledException.class)
+                .hasMessage("Account is disabled. Please contact the administrator.");
+    }
 }

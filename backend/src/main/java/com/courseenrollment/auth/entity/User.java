@@ -1,6 +1,7 @@
 package com.courseenrollment.auth.entity;
 
 import com.courseenrollment.auth.enums.UserRole;
+import com.courseenrollment.auth.enums.UserStatus;
 import jakarta.persistence.*;
 import java.time.Instant;
 
@@ -25,6 +26,10 @@ public class User {
     @Column(nullable = false)
     private UserRole role = UserRole.STUDENT;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status = UserStatus.ACTIVE;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -36,6 +41,9 @@ public class User {
         Instant now = Instant.now();
         this.createdAt = now;
         this.updatedAt = now;
+        if (this.status == null) {
+            this.status = UserStatus.ACTIVE;
+        }
     }
 
     @PreUpdate
@@ -51,6 +59,15 @@ public class User {
         this.name = name;
         this.password = password;
         this.role = role;
+        this.status = UserStatus.ACTIVE;
+    }
+
+    public User(String email, String name, String password, UserRole role, UserStatus status) {
+        this.email = email;
+        this.name = name;
+        this.password = password;
+        this.role = role;
+        this.status = status != null ? status : UserStatus.ACTIVE;
     }
 
     public Long getId() {
@@ -91,6 +108,14 @@ public class User {
 
     public void setRole(UserRole role) {
         this.role = role;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
     }
 
     public Instant getCreatedAt() {

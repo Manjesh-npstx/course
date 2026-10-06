@@ -82,6 +82,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
+    public ResponseEntity<ApiErrorResponse> handleDisabledException(org.springframework.security.authentication.DisabledException ex) {
+        ApiErrorResponse body = new ApiErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                ex.getMessage() != null && !ex.getMessage().trim().isEmpty()
+                        ? ex.getMessage()
+                        : "Account is disabled. Please contact the administrator.",
+                "Forbidden"
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiErrorResponse> handleAuthException(AuthenticationException ex) {
         ApiErrorResponse body = new ApiErrorResponse(

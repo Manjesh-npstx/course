@@ -9,7 +9,9 @@ import com.courseenrollment.auth.enums.UserRole;
 import com.courseenrollment.auth.repository.UserRepository;
 import com.courseenrollment.common.exception.ConflictException;
 import com.courseenrollment.config.JwtService;
+import com.courseenrollment.auth.enums.UserStatus;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,6 +96,10 @@ public class AuthService {
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid username or password");
+        }
+
+        if (user.getStatus() == UserStatus.DISABLED) {
+            throw new DisabledException("Account is disabled. Please contact the administrator.");
         }
 
         String token = jwtService.generateToken(
