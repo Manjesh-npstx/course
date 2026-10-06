@@ -11,3 +11,9 @@
     justify-content: center;
     align-items: center;
 }
+
+@media (max-width: 480px) {
+    .page-content {
+        padding: var(--spacing-large) var(--spacing-small);
+    }
+}

@@ -17,3 +17,14 @@
     gap: var(--spacing-small);
     margin-top: var(--spacing-small);
 }
+
+@media (max-width: 480px) {
+    .confirm-dialog-actions {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .confirm-dialog-actions > * {
+        width: 100%;
+    }
+}

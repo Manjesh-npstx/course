@@ -19,7 +19,8 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow-lg);
     width: 100%;
-    max-width: 500px;
+    max-width: 520px;
+    max-height: calc(100dvh - 32px);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -76,10 +77,44 @@
 
 .modal-body {
     padding: var(--spacing-large);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .modal-actions {
     display: flex;
     gap: var(--spacing-medium);
     margin-top: var(--spacing-medium);
+}
+
+.modal-actions > * {
+    flex: 1;
+}
+
+@media (max-width: 480px) {
+    .modal-backdrop {
+        padding: 8px;
+    }
+
+    .modal-dialog {
+        max-height: calc(100dvh - 16px);
+        border-radius: var(--radius-sm);
+    }
+
+    .modal-header {
+        padding: var(--spacing-small) var(--spacing-medium);
+    }
+
+    .modal-body {
+        padding: var(--spacing-medium);
+    }
+
+    .modal-actions {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .modal-actions > * {
+        width: 100%;
+    }
 }

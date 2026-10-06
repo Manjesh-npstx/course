@@ -6,6 +6,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-medium);
+    min-width: 0;
+    box-sizing: border-box;
     transition:
         border-color 0.15s ease,
         box-shadow 0.15s ease;
@@ -28,6 +30,7 @@
     font-weight: 600;
     color: var(--text);
     margin: 0;
+    word-break: break-word;
 }
 
 .course-card-meta {
@@ -40,8 +43,19 @@
 
 .course-card-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--spacing-small);
     margin-top: auto;
     padding-top: var(--spacing-small);
     border-top: 1px solid var(--border-subtle);
+}
+
+@media (max-width: 480px) {
+    .course-card {
+        padding: var(--spacing-medium);
+    }
+
+    .course-card-actions > * {
+        flex: 1;
+    }
 }

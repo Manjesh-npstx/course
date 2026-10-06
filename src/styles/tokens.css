@@ -4,6 +4,7 @@
     --surface-hover: #f8fafc;
     --border: #e2e8f0;
     --border-subtle: #f1f5f9;
+    --border-hover: #cbd5e1;
     --text: #0f172a;
     --text-secondary: #64748b;
     --text-muted: #94a3b8;
@@ -30,8 +31,10 @@
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
 
+    --spacing-xs: 4px;
     --spacing-small: 8px;
     --spacing-medium: 16px;
     --spacing-large: 24px;
     --spacing-xlarge: 32px;
+    --content-max-width: 1400px;
 }

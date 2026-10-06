@@ -58,3 +58,9 @@
 .search-clear:hover {
     color: var(--text);
 }
+
+@media (max-width: 640px) {
+    .search-bar {
+        max-width: 100%;
+    }
+}

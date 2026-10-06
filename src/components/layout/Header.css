@@ -100,3 +100,22 @@
     background-color: var(--border-subtle);
     border-color: var(--border);
 }
+
+@media (max-width: 640px) {
+    .app-header {
+        padding: var(--spacing-small) var(--spacing-medium);
+    }
+
+    .header-container {
+        flex-wrap: wrap;
+        gap: var(--spacing-small);
+    }
+
+    .header-user-nav {
+        gap: 8px;
+    }
+
+    .user-greeting {
+        font-size: 12px;
+    }
+}
