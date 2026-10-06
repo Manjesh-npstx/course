@@ -35,21 +35,53 @@ public class StudentController {
     }
 
     @GetMapping
-    @Operation(summary = "List all students (paginated)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "List students (paginated, scoped to instructor courses if instructor)")
     public ResponseEntity<PaginatedResponse<Student>> findAll(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int limit,
-            @RequestParam(required = false) String search
+            @RequestParam(required = false) String search,
+            org.springframework.security.core.Authentication auth
     ) {
-        PaginatedResponse<Student> response = studentService.findAll(page, limit, search);
+        String instructorEmail = null;
+        if (isInstructorOnly(auth)) {
+            instructorEmail = auth.getName();
+        }
+        PaginatedResponse<Student> response = studentService.findAll(page, limit, search, instructorEmail);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
+    @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Get a student by ID")
-    public ResponseEntity<Student> findOne(@PathVariable Long id) {
+    public ResponseEntity<Student> findOne(@PathVariable Long id, org.springframework.security.core.Authentication auth) {
         Student student = studentService.findOne(id);
+        if (isInstructorOnly(auth)) {
+            String instructorEmail = auth.getName();
+            if (student.getCourse() == null || student.getCourse().getInstructorEmail() == null ||
+                    !student.getCourse().getInstructorEmail().equalsIgnoreCase(instructorEmail)) {
+                throw new org.springframework.security.access.AccessDeniedException("Instructors can only view students enrolled in their own courses.");
+            }
+        }
         return ResponseEntity.ok(student);
+    }
+
+    private boolean isInstructorOnly(org.springframework.security.core.Authentication auth) {
+        if (auth == null || auth.getAuthorities() == null) {
+            return false;
+        }
+        boolean isInstructor = false;
+        for (org.springframework.security.core.GrantedAuthority ga : auth.getAuthorities()) {
+            if ("ROLE_ADMIN".equalsIgnoreCase(ga.getAuthority())) {
+                return false;
+            }
+            if ("ROLE_INSTRUCTOR".equalsIgnoreCase(ga.getAuthority())) {
+                isInstructor = true;
+            }
+        }
+        return isInstructor;
     }
 
     @PatchMapping("/{id}")

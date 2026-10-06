@@ -1,7 +1,11 @@
 package com.courseenrollment.student.service;
 
+import com.courseenrollment.auth.entity.User;
+import com.courseenrollment.auth.enums.UserRole;
+import com.courseenrollment.auth.repository.UserRepository;
 import com.courseenrollment.common.dto.PageMeta;
 import com.courseenrollment.common.dto.PaginatedResponse;
+import com.courseenrollment.common.exception.BadRequestException;
 import com.courseenrollment.common.exception.ConflictException;
 import com.courseenrollment.common.exception.ResourceNotFoundException;
 import com.courseenrollment.course.entity.Course;
@@ -26,10 +30,12 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final CourseRepository courseRepository;
+    private final UserRepository userRepository;
 
-    public StudentService(StudentRepository studentRepository, CourseRepository courseRepository) {
+    public StudentService(StudentRepository studentRepository, CourseRepository courseRepository, UserRepository userRepository) {
         this.studentRepository = studentRepository;
         this.courseRepository = courseRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -46,17 +52,28 @@ public class StudentService {
             throw new ConflictException("Course is full. Cannot enroll more students.");
         }
 
-        if (studentRepository.existsByEmail(req.getEmail().trim())) {
-            throw new ConflictException("Email already registered");
+        String email = req.getEmail().trim();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Student must be a registered user before enrolling."));
+        if (user.getRole() != UserRole.STUDENT) {
+            throw new BadRequestException("Only registered users with role 'STUDENT' can be enrolled in a course.");
+        }
+
+        if (studentRepository.existsByEmailIgnoreCaseAndCourseId(email, req.getCourseId())) {
+            throw new ConflictException("Student is already enrolled in this course.");
         }
 
         String enrollDate = (req.getEnrollDate() != null && !req.getEnrollDate().trim().isEmpty())
                 ? req.getEnrollDate().trim()
                 : LocalDate.now().toString();
 
+        String studentName = (req.getName() != null && !req.getName().trim().isEmpty())
+                ? req.getName().trim()
+                : (user.getName() != null && !user.getName().trim().isEmpty() ? user.getName().trim() : user.getEmail());
+
         Student student = new Student(
-                req.getName().trim(),
-                req.getEmail().trim(),
+                studentName,
+                email,
                 enrollDate,
                 course
         );
@@ -77,16 +94,32 @@ public class StudentService {
 
     @Transactional(readOnly = true)
     public PaginatedResponse<Student> findAll(int page, int limit, String search) {
+        return findAll(page, limit, search, null);
+    }
+
+    @Transactional(readOnly = true)
+    public PaginatedResponse<Student> findAll(int page, int limit, String search, String instructorEmail) {
         int take = Math.min(Math.max(limit, 1), 50);
         int pageIndex = Math.max(page - 1, 0);
 
         Pageable pageable = PageRequest.of(pageIndex, take, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Student> resultPage;
 
-        if (search != null && !search.trim().isEmpty()) {
-            resultPage = studentRepository.searchStudents(search.trim(), pageable);
+        boolean hasSearch = (search != null && !search.trim().isEmpty());
+        boolean hasInstructor = (instructorEmail != null && !instructorEmail.trim().isEmpty());
+
+        if (hasInstructor) {
+            if (hasSearch) {
+                resultPage = studentRepository.searchStudentsByInstructorEmail(instructorEmail.trim(), search.trim(), pageable);
+            } else {
+                resultPage = studentRepository.findByInstructorEmail(instructorEmail.trim(), pageable);
+            }
         } else {
-            resultPage = studentRepository.findAll(pageable);
+            if (hasSearch) {
+                resultPage = studentRepository.searchStudents(search.trim(), pageable);
+            } else {
+                resultPage = studentRepository.findAll(pageable);
+            }
         }
 
         long total = resultPage.getTotalElements();
@@ -108,8 +141,15 @@ public class StudentService {
 
         if (req.getEmail() != null && !req.getEmail().trim().isEmpty()) {
             String newEmail = req.getEmail().trim();
-            if (studentRepository.existsByEmailAndIdNot(newEmail, id)) {
-                throw new ConflictException("Email already registered");
+            User user = userRepository.findByEmail(newEmail)
+                    .orElseThrow(() -> new BadRequestException("Student must be a registered user before enrolling."));
+            if (user.getRole() != UserRole.STUDENT) {
+                throw new BadRequestException("Only registered users with role 'STUDENT' can be enrolled in a course.");
+            }
+
+            Long targetCourseId = (req.getCourseId() != null) ? req.getCourseId() : student.getCourse().getId();
+            if (studentRepository.existsByEmailIgnoreCaseAndCourseIdAndIdNot(newEmail, targetCourseId, id)) {
+                throw new ConflictException("Student is already enrolled in this course.");
             }
             student.setEmail(newEmail);
         }
@@ -125,6 +165,11 @@ public class StudentService {
             long currentEnrollment = studentRepository.countByCourseId(req.getCourseId());
             if (currentEnrollment >= newCourse.getSeatLimit()) {
                 throw new ConflictException("Target course is full. Cannot transfer student.");
+            }
+
+            String currentEmail = (req.getEmail() != null && !req.getEmail().trim().isEmpty()) ? req.getEmail().trim() : student.getEmail();
+            if (studentRepository.existsByEmailIgnoreCaseAndCourseIdAndIdNot(currentEmail, req.getCourseId(), id)) {
+                throw new ConflictException("Student is already enrolled in this course.");
             }
             student.setCourse(newCourse);
         }

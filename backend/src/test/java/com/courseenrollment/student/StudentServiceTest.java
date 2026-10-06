@@ -1,6 +1,10 @@
 package com.courseenrollment.student;
 
+import com.courseenrollment.auth.entity.User;
+import com.courseenrollment.auth.enums.UserRole;
+import com.courseenrollment.auth.repository.UserRepository;
 import com.courseenrollment.common.dto.PaginatedResponse;
+import com.courseenrollment.common.exception.BadRequestException;
 import com.courseenrollment.common.exception.ConflictException;
 import com.courseenrollment.common.exception.ResourceNotFoundException;
 import com.courseenrollment.course.entity.Course;
@@ -39,11 +43,15 @@ class StudentServiceTest {
     @Mock
     private CourseRepository courseRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private StudentService studentService;
 
     private Course mockCourse;
     private Student mockStudent;
+    private User mockUser;
 
     @BeforeEach
     void setUp() {
@@ -52,15 +60,19 @@ class StudentServiceTest {
 
         mockStudent = new Student("Alice", "alice@test.com", "2026-01-01", mockCourse);
         mockStudent.setId(1L);
+
+        mockUser = new User("alice@test.com", "Alice", "password", UserRole.STUDENT);
+        mockUser.setId(1L);
     }
 
     @Test
-    @DisplayName("create should enroll a student when seats are available")
+    @DisplayName("create should enroll a registered student when seats are available")
     void create_success() {
         CreateStudentRequest req = new CreateStudentRequest("Alice", "alice@test.com", "2026-01-01", 1L);
         when(courseRepository.findById(1L)).thenReturn(Optional.of(mockCourse));
         when(studentRepository.countByCourseId(1L)).thenReturn(0L);
-        when(studentRepository.existsByEmail("alice@test.com")).thenReturn(false);
+        when(userRepository.findByEmail("alice@test.com")).thenReturn(Optional.of(mockUser));
+        when(studentRepository.existsByEmailIgnoreCaseAndCourseId("alice@test.com", 1L)).thenReturn(false);
         when(studentRepository.save(any(Student.class))).thenReturn(mockStudent);
 
         Student created = studentService.create(req);
@@ -68,6 +80,60 @@ class StudentServiceTest {
         assertThat(created).isNotNull();
         assertThat(created.getName()).isEqualTo("Alice");
         verify(studentRepository).save(any(Student.class));
+    }
+
+    @Test
+    @DisplayName("create should allow same student to enroll in another course (multi-course enrollment)")
+    void create_multiCourse_success() {
+        Course course2 = new Course("Vue 101", "Bob Smith", 5);
+        course2.setId(2L);
+        Student studentInCourse2 = new Student("Alice", "alice@test.com", "2026-01-01", course2);
+        studentInCourse2.setId(2L);
+
+        CreateStudentRequest req = new CreateStudentRequest("Alice", "alice@test.com", "2026-01-01", 2L);
+        when(courseRepository.findById(2L)).thenReturn(Optional.of(course2));
+        when(studentRepository.countByCourseId(2L)).thenReturn(1L);
+        when(userRepository.findByEmail("alice@test.com")).thenReturn(Optional.of(mockUser));
+        when(studentRepository.existsByEmailIgnoreCaseAndCourseId("alice@test.com", 2L)).thenReturn(false);
+        when(studentRepository.save(any(Student.class))).thenReturn(studentInCourse2);
+
+        Student created = studentService.create(req);
+
+        assertThat(created).isNotNull();
+        assertThat(created.getEmail()).isEqualTo("alice@test.com");
+        assertThat(created.getCourse().getId()).isEqualTo(2L);
+        verify(studentRepository).save(any(Student.class));
+    }
+
+    @Test
+    @DisplayName("create should throw BadRequestException when student is not a registered user")
+    void create_unregisteredStudent_throwsBadRequest() {
+        CreateStudentRequest req = new CreateStudentRequest("Stranger", "stranger@test.com", null, 1L);
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(mockCourse));
+        when(studentRepository.countByCourseId(1L)).thenReturn(0L);
+        when(userRepository.findByEmail("stranger@test.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> studentService.create(req))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessage("Student must be a registered user before enrolling.");
+
+        verify(studentRepository, never()).save(any(Student.class));
+    }
+
+    @Test
+    @DisplayName("create should throw BadRequestException when registered user does not have STUDENT role")
+    void create_nonStudentRole_throwsBadRequest() {
+        User adminUser = new User("admin@test.com", "Admin", "password", UserRole.ADMIN);
+        CreateStudentRequest req = new CreateStudentRequest("Admin", "admin@test.com", null, 1L);
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(mockCourse));
+        when(studentRepository.countByCourseId(1L)).thenReturn(0L);
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(adminUser));
+
+        assertThatThrownBy(() -> studentService.create(req))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessage("Only registered users with role 'STUDENT' can be enrolled in a course.");
+
+        verify(studentRepository, never()).save(any(Student.class));
     }
 
     @Test
@@ -98,16 +164,17 @@ class StudentServiceTest {
     }
 
     @Test
-    @DisplayName("create should throw ConflictException on duplicate student email")
-    void create_duplicateEmail() {
+    @DisplayName("create should throw ConflictException when student already enrolled in same course")
+    void create_duplicateEnrollmentInSameCourse() {
         CreateStudentRequest req = new CreateStudentRequest("Alice", "alice@test.com", null, 1L);
         when(courseRepository.findById(1L)).thenReturn(Optional.of(mockCourse));
         when(studentRepository.countByCourseId(1L)).thenReturn(0L);
-        when(studentRepository.existsByEmail("alice@test.com")).thenReturn(true);
+        when(userRepository.findByEmail("alice@test.com")).thenReturn(Optional.of(mockUser));
+        when(studentRepository.existsByEmailIgnoreCaseAndCourseId("alice@test.com", 1L)).thenReturn(true);
 
         assertThatThrownBy(() -> studentService.create(req))
                 .isInstanceOf(ConflictException.class)
-                .hasMessage("Email already registered");
+                .hasMessage("Student is already enrolled in this course.");
 
         verify(studentRepository, never()).save(any(Student.class));
     }

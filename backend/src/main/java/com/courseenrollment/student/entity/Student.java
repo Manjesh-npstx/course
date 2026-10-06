@@ -8,7 +8,12 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "students")
+@Table(
+    name = "students",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_student_email_course", columnNames = {"email", "course_id"})
+    }
+)
 public class Student {
 
     @Id
@@ -18,7 +23,7 @@ public class Student {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
     @Column

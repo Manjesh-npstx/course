@@ -38,4 +38,16 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     List<Course> findEnrolledCoursesByEmail(@Param("email") String email);
 
     Optional<Student> findFirstByEmailIgnoreCase(String email);
+
+    @Query("SELECT COUNT(s) > 0 FROM Student s WHERE LOWER(s.email) = LOWER(:email) AND s.course.id = :courseId")
+    boolean existsByEmailIgnoreCaseAndCourseId(@Param("email") String email, @Param("courseId") Long courseId);
+
+    @Query("SELECT COUNT(s) > 0 FROM Student s WHERE LOWER(s.email) = LOWER(:email) AND s.course.id = :courseId AND s.id <> :id")
+    boolean existsByEmailIgnoreCaseAndCourseIdAndIdNot(@Param("email") String email, @Param("courseId") Long courseId, @Param("id") Long id);
+
+    @Query("SELECT s FROM Student s WHERE LOWER(s.course.instructorEmail) = LOWER(:instructorEmail) AND (LOWER(s.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(s.email) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Student> searchStudentsByInstructorEmail(@Param("instructorEmail") String instructorEmail, @Param("search") String search, Pageable pageable);
+
+    @Query("SELECT s FROM Student s WHERE LOWER(s.course.instructorEmail) = LOWER(:instructorEmail)")
+    Page<Student> findByInstructorEmail(@Param("instructorEmail") String instructorEmail, Pageable pageable);
 }

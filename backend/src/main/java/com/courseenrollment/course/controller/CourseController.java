@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -166,12 +167,24 @@ public class CourseController {
     }
 
     @GetMapping("/{id}/students")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
+    @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "List students enrolled in a course")
     public ResponseEntity<PaginatedResponse<Student>> findStudents(
             @PathVariable Long id,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int limit
+            @RequestParam(defaultValue = "10") int limit,
+            Authentication auth
     ) {
+        Course course = courseService.findOne(id);
+        UserRole role = determineUserRole(auth);
+        if (role == UserRole.INSTRUCTOR) {
+            String currentUserEmail = auth != null ? auth.getName() : null;
+            if (currentUserEmail == null || course.getInstructorEmail() == null ||
+                    !course.getInstructorEmail().equalsIgnoreCase(currentUserEmail)) {
+                throw new AccessDeniedException("Instructors can only view students enrolled in their own courses.");
+            }
+        }
         PaginatedResponse<Student> response = courseService.findStudentsByCourseId(id, page, limit);
         return ResponseEntity.ok(response);
     }

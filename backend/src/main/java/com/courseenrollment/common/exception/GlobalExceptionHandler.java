@@ -94,9 +94,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiErrorResponse> handleAccessDenied(AccessDeniedException ex) {
+        String message = (ex.getMessage() != null && !ex.getMessage().trim().isEmpty() && !ex.getMessage().equalsIgnoreCase("Access Denied"))
+                ? ex.getMessage()
+                : "Access denied";
         ApiErrorResponse body = new ApiErrorResponse(
                 HttpStatus.FORBIDDEN.value(),
-                "Admin access required",
+                message,
                 "Forbidden"
         );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
