@@ -82,24 +82,6 @@
     gap: 8px;
 }
 
-.nav-btn-switch {
-    background-color: var(--surface-hover);
-    border: 1px dashed var(--border);
-    color: var(--text-secondary);
-    font-size: 12px;
-    font-weight: 500;
-    padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.nav-btn-switch:hover {
-    background-color: var(--primary-light);
-    color: var(--primary);
-    border-color: var(--primary);
-}
-
 .nav-btn-logout {
     background-color: transparent;
     border: 1px solid var(--border);

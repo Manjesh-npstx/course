@@ -18,8 +18,7 @@ import "./AppLayout.css";
  * topbar with breadcrumbs, role switcher, and mode banner.
  */
 export function AppLayout() {
-    const { user, role, isAdmin, isInstructor, isStudent, switchRole, logout } =
-        useAuth();
+    const { user, role, isAdmin, isInstructor, isStudent, logout } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
@@ -27,14 +26,6 @@ export function AppLayout() {
     function handleLogout() {
         logout();
         navigate(ROUTES.LOGIN);
-    }
-
-    async function handleRoleSelect(targetRole) {
-        try {
-            await switchRole(targetRole);
-        } catch {
-            // Handled gracefully
-        }
     }
 
     function getRoleBadgeVariant() {
@@ -212,41 +203,6 @@ export function AppLayout() {
                                     <line x1="21" y1="12" x2="9" y2="12" />
                                 </svg>
                             </button>
-                        </div>
-
-                        <div className="sidebar-role-switch">
-                            <div className="sidebar-role-switch-title">
-                                Switch Role (Demo)
-                            </div>
-                            <div className="sidebar-role-buttons">
-                                <button
-                                    type="button"
-                                    className={`role-switch-btn ${isAdmin ? "active" : ""}`}
-                                    onClick={() =>
-                                        handleRoleSelect(ROLES.ADMIN)
-                                    }
-                                >
-                                    Admin
-                                </button>
-                                <button
-                                    type="button"
-                                    className={`role-switch-btn ${isInstructor ? "active" : ""}`}
-                                    onClick={() =>
-                                        handleRoleSelect(ROLES.INSTRUCTOR)
-                                    }
-                                >
-                                    Instructor
-                                </button>
-                                <button
-                                    type="button"
-                                    className={`role-switch-btn ${isStudent ? "active" : ""}`}
-                                    onClick={() =>
-                                        handleRoleSelect(ROLES.STUDENT)
-                                    }
-                                >
-                                    Student
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>

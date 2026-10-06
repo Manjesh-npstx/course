@@ -28,6 +28,8 @@ export const tokenStorage = {
     clear() {
         localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_user");
     },
     hasToken() {
         return Boolean(localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN));

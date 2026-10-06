@@ -12,19 +12,11 @@ import "./Header.css";
 function Header() {
     const location = useLocation();
     const navigate = useNavigate();
-    const { isAuthenticated, user, logout, switchRole } = useAuth();
+    const { isAuthenticated, user, logout } = useAuth();
 
     function handleLogout() {
         logout();
         navigate(ROUTES.LOGIN);
-    }
-
-    async function handleSwitchRole() {
-        try {
-            await switchRole();
-        } catch {
-            // Error handled gracefully
-        }
     }
 
     function getRoleBadgeVariant(role) {
@@ -53,14 +45,6 @@ function Header() {
                                     {user?.role || ROLES.STUDENT}
                                 </Badge>
                             </span>
-                            <button
-                                type="button"
-                                className="nav-btn-switch"
-                                onClick={handleSwitchRole}
-                                title="Cycle role for testing (Admin -> Instructor -> Student)"
-                            >
-                                Switch Role
-                            </button>
                             <button
                                 type="button"
                                 className="nav-btn-logout"
