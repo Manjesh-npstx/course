@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Alert from "@/components/common/Alert";
 import Button from "@/components/common/Button";
-import Input from "@/components/common/Input";
 import Modal from "@/components/common/Modal";
+import { userService } from "@/services/userService";
 
 /**
- * Modal dialog for enrolling a student into a selected course.
+ * Modal dialog for enrolling a registered student into a selected course.
  */
 export function EnrollStudentModal({
     isOpen,
@@ -14,43 +14,76 @@ export function EnrollStudentModal({
     onSubmit,
     courses = [],
     preselectedCourseId = null,
+    preselectedStudent = null,
+    registeredStudents = [],
 }) {
-    const [courseId, setCourseId] = useState(
-        preselectedCourseId ? String(preselectedCourseId) : ""
-    );
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
+    const [customCourseId, setCustomCourseId] = useState("");
+    const [customEmail, setCustomEmail] = useState("");
+    const [fetchedStudents, setFetchedStudents] = useState([]);
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const courseId = preselectedCourseId
+        ? String(preselectedCourseId)
+        : customCourseId;
+    const selectedEmail = preselectedStudent?.email || customEmail;
+    const studentsList =
+        registeredStudents.length > 0 ? registeredStudents : fetchedStudents;
+
+    useEffect(() => {
+        let isMounted = true;
+        if (isOpen && registeredStudents.length === 0) {
+            userService
+                .getActiveStudents()
+                .then((data) => {
+                    if (isMounted) setFetchedStudents(data || []);
+                })
+                .catch(() => {
+                    // Ignore background load error
+                });
+        }
+        return () => {
+            isMounted = false;
+        };
+    }, [isOpen, registeredStudents.length]);
+
+    function handleClose() {
+        setCustomCourseId("");
+        setCustomEmail("");
+        setError("");
+        onClose();
+    }
 
     async function handleSubmit(event) {
         event.preventDefault();
         setError("");
 
-        const parsedCourseId = Number(courseId || preselectedCourseId);
+        const parsedCourseId = Number(courseId);
         if (!parsedCourseId) {
             setError("Please select a course");
             return;
         }
-        if (!name.trim()) {
-            setError("Student name is required");
+
+        const email = (selectedEmail || "").trim();
+        if (!email) {
+            setError("Please select a registered student");
             return;
         }
-        if (!email.trim() || !email.includes("@")) {
-            setError("Valid student email is required");
-            return;
-        }
+
+        const student =
+            studentsList.find(
+                (s) => s.email.toLowerCase() === email.toLowerCase()
+            ) || preselectedStudent;
+        const name = (student?.name || email).trim();
 
         setIsSubmitting(true);
         try {
             await onSubmit({
-                name: name.trim(),
-                email: email.trim(),
+                name,
+                email,
                 courseId: parsedCourseId,
             });
-            setName("");
-            setEmail("");
-            onClose();
+            handleClose();
         } catch (err) {
             setError(err.message || "Failed to enroll student");
         } finally {
@@ -59,9 +92,45 @@ export function EnrollStudentModal({
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Enroll Student">
+        <Modal isOpen={isOpen} onClose={handleClose} title="Enroll Student">
             <Alert>{error}</Alert>
             <form onSubmit={handleSubmit} noValidate>
+                {!preselectedStudent && (
+                    <div className="input-group">
+                        <label
+                            htmlFor="enroll-student-select"
+                            className="input-label"
+                        >
+                            Select Registered Student
+                        </label>
+                        <select
+                            id="enroll-student-select"
+                            className="input-field"
+                            value={customEmail}
+                            onChange={(e) => setCustomEmail(e.target.value)}
+                            disabled={isSubmitting}
+                            required
+                        >
+                            <option value="">Choose a student...</option>
+                            {studentsList.map((s) => (
+                                <option key={s.id} value={s.email}>
+                                    {s.name} ({s.email})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
+                {preselectedStudent && (
+                    <div className="input-group">
+                        <label className="input-label">Student</label>
+                        <p className="card-description">
+                            <strong>{preselectedStudent.name}</strong> (
+                            {preselectedStudent.email})
+                        </p>
+                    </div>
+                )}
+
                 {!preselectedCourseId && (
                     <div className="input-group">
                         <label
@@ -73,8 +142,8 @@ export function EnrollStudentModal({
                         <select
                             id="enroll-course-select"
                             className="input-field"
-                            value={courseId}
-                            onChange={(e) => setCourseId(e.target.value)}
+                            value={customCourseId}
+                            onChange={(e) => setCustomCourseId(e.target.value)}
                             disabled={isSubmitting}
                             required
                         >
@@ -87,27 +156,7 @@ export function EnrollStudentModal({
                         </select>
                     </div>
                 )}
-                <Input
-                    id="enroll-student-name"
-                    name="name"
-                    label="Student Name"
-                    placeholder="e.g. John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    disabled={isSubmitting}
-                    required
-                />
-                <Input
-                    id="enroll-student-email"
-                    name="email"
-                    type="email"
-                    label="Student Email"
-                    placeholder="student@campus.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isSubmitting}
-                    required
-                />
+
                 <div className="modal-actions">
                     <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? "Enrolling..." : "Enroll Student"}
@@ -115,7 +164,7 @@ export function EnrollStudentModal({
                     <Button
                         type="button"
                         variant="secondary"
-                        onClick={onClose}
+                        onClick={handleClose}
                         disabled={isSubmitting}
                     >
                         Cancel
@@ -135,6 +184,11 @@ EnrollStudentModal.propTypes = {
         PropTypes.number,
         PropTypes.string,
     ]),
+    preselectedStudent: PropTypes.shape({
+        name: PropTypes.string,
+        email: PropTypes.string,
+    }),
+    registeredStudents: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default EnrollStudentModal;

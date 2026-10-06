@@ -12,10 +12,13 @@ import com.courseenrollment.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import com.courseenrollment.course.entity.Course;
+import com.courseenrollment.student.repository.StudentRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,9 +26,11 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, StudentRepository studentRepository) {
         this.userRepository = userRepository;
+        this.studentRepository = studentRepository;
     }
 
     @Transactional(readOnly = true)
@@ -42,7 +47,19 @@ public class UserService {
         Page<User> resultPage = userRepository.searchUsers(userRole, userStatus, searchTerm, pageable);
 
         List<UserDto> data = resultPage.getContent().stream()
-                .map(UserDto::fromEntity)
+                .map(user -> {
+                    UserDto dto = UserDto.fromEntity(user);
+                    if (user.getRole() == UserRole.STUDENT && studentRepository != null) {
+                        List<String> courseNames = studentRepository.findEnrolledCoursesByEmail(user.getEmail())
+                                .stream()
+                                .map(Course::getName)
+                                .collect(Collectors.toList());
+                        dto.setEnrolledCourses(courseNames);
+                    } else {
+                        dto.setEnrolledCourses(Collections.emptyList());
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
 
         long total = resultPage.getTotalElements();

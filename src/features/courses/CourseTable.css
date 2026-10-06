@@ -113,3 +113,9 @@
     background-color: transparent;
     color: var(--text-muted);
 }
+
+.course-badge-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}

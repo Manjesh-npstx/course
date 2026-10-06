@@ -30,13 +30,18 @@ body {
     overflow-x: hidden;
 }
 
-img, svg, video {
+img,
+svg,
+video {
     max-width: 100%;
     height: auto;
     vertical-align: middle;
 }
 
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
     font-family: inherit;
     font-size: inherit;
 }

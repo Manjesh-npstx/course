@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import com.courseenrollment.student.repository.StudentRepository;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +35,9 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private StudentRepository studentRepository;
 
     @InjectMocks
     private UserService userService;
@@ -56,6 +60,8 @@ class UserServiceTest {
         Page<User> userPage = new PageImpl<>(List.of(adminUser, studentUser));
         when(userRepository.searchUsers(eq(UserRole.STUDENT), eq(UserStatus.ACTIVE), eq("student"), any(Pageable.class)))
                 .thenReturn(userPage);
+        when(studentRepository.findEnrolledCoursesByEmail("student@test.com"))
+                .thenReturn(List.of());
 
         PaginatedResponse<UserDto> response = userService.findAll(1, 10, "student", "active", "student");
 

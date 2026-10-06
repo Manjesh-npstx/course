@@ -9,6 +9,7 @@ public class UserDto {
     private String email;
     private String role;
     private String status;
+    private java.util.List<String> enrolledCourses;
 
     public UserDto() {
     }
@@ -73,5 +74,13 @@ public class UserDto {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public java.util.List<String> getEnrolledCourses() {
+        return enrolledCourses;
+    }
+
+    public void setEnrolledCourses(java.util.List<String> enrolledCourses) {
+        this.enrolledCourses = enrolledCourses;
     }
 }
