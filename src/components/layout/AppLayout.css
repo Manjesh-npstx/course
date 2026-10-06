@@ -236,32 +236,6 @@
     width: 100%;
 }
 
-.mode-banner {
-    padding: 12px var(--spacing-medium);
-    border-radius: var(--radius-sm);
-    margin-bottom: var(--spacing-large);
-    display: flex;
-    align-items: center;
-    font-size: 0.875rem;
-}
-
-.mode-banner-student {
-    background: var(--primary-light);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    color: #1e40af;
-}
-
-.mode-banner-instructor {
-    background: var(--info-light);
-    border: 1px solid var(--info-border);
-    color: #4338ca;
-}
-
-.mode-banner-admin {
-    background: var(--warning-light);
-    border: 1px solid var(--warning-border);
-    color: #92400e;
-}
 
 /* Responsive styles */
 @media (max-width: 768px) {

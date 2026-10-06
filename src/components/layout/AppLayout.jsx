@@ -15,10 +15,10 @@ import "./AppLayout.css";
 
 /**
  * Shell layout with fixed/collapsible sidebar, navigation from config,
- * topbar with breadcrumbs, role switcher, and mode banner.
+ * and topbar with breadcrumbs.
  */
 export function AppLayout() {
-    const { user, role, isAdmin, isInstructor, isStudent, logout } = useAuth();
+    const { user, role, isAdmin, isInstructor, logout } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
@@ -272,35 +272,6 @@ export function AppLayout() {
                 </header>
 
                 <main className="main-content">
-                    {isStudent && (
-                        <div className="mode-banner mode-banner-student">
-                            <span>
-                                ℹ️ <strong>Student Mode:</strong> You can browse
-                                approved courses, self-enroll in courses, and
-                                view your enrollments in &quot;My Courses&quot;.
-                            </span>
-                        </div>
-                    )}
-                    {isInstructor && (
-                        <div className="mode-banner mode-banner-instructor">
-                            <span>
-                                🎓 <strong>Instructor Mode:</strong> You can
-                                create courses (sent for Admin approval), manage
-                                your created courses in &quot;My Courses&quot;,
-                                and view enrolled students.
-                            </span>
-                        </div>
-                    )}
-                    {isAdmin && (
-                        <div className="mode-banner mode-banner-admin">
-                            <span>
-                                👑 <strong>Admin Mode:</strong> You have full
-                                administrator access to approve/reject pending
-                                courses, manage all courses, and enroll
-                                students.
-                            </span>
-                        </div>
-                    )}
                     <Outlet />
                 </main>
             </div>
