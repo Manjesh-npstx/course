@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Alert from "@/components/common/Alert";
 import Badge from "@/components/common/Badge";
 import Button from "@/components/common/Button";
@@ -13,10 +14,15 @@ import "./ProfilePage.css";
 const phoneRegex = /^[+]?[0-9\s\-().]{7,20}$/;
 
 /**
- * User Profile Page displaying name, email, phone, role, and allowing profile editing and password change.
+ * User Profile and Reset Password page.
+ * Displays profile details (Name, Email, Phone, Role, Status) and provides
+ * authenticated password reset (Old Password, New Password, Confirm Password).
  */
 function ProfilePage() {
     const { user: authUser, updateUser } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeTab = searchParams.get("tab") === "reset-password" ? "reset-password" : "profile";
+
     const [profile, setProfile] = useState(authUser || {});
     const [loading, setLoading] = useState(true);
     const [serverError, setServerError] = useState("");
@@ -31,17 +37,16 @@ function ProfilePage() {
     const [editErrors, setEditErrors] = useState({});
     const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-    // Change password state
-    const [showChangePassword, setShowChangePassword] = useState(false);
+    // Reset password state
     const [passwordForm, setPasswordForm] = useState({
-        currentPassword: "",
+        oldPassword: "",
         newPassword: "",
         confirmPassword: "",
     });
     const [passwordErrors, setPasswordErrors] = useState({});
     const [passwordError, setPasswordError] = useState("");
     const [passwordSuccess, setPasswordSuccess] = useState("");
-    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [isResettingPassword, setIsResettingPassword] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -72,6 +77,14 @@ function ProfilePage() {
             isMounted = false;
         };
     }, [updateUser]);
+
+    function handleTabChange(tab) {
+        setSearchParams(tab === "reset-password" ? { tab: "reset-password" } : {});
+        setServerError("");
+        setSuccessMessage("");
+        setPasswordError("");
+        setPasswordSuccess("");
+    }
 
     function getRoleBadgeVariant(role) {
         switch ((role || "").toLowerCase()) {
@@ -163,7 +176,7 @@ function ProfilePage() {
         setIsEditing(false);
     }
 
-    // Password Change handlers
+    // Reset Password handlers
     function handlePasswordChange(e) {
         const { name, value } = e.target;
         const nextForm = { ...passwordForm, [name]: value };
@@ -171,10 +184,10 @@ function ProfilePage() {
         setPasswordError("");
         setPasswordSuccess("");
 
-        if (name === "currentPassword") {
+        if (name === "oldPassword") {
             setPasswordErrors((prev) => ({
                 ...prev,
-                currentPassword: !value ? "Current password is required" : "",
+                oldPassword: !value ? "Old password is required" : "",
             }));
         }
 
@@ -207,15 +220,15 @@ function ProfilePage() {
         }
     }
 
-    async function handleSubmitPassword(e) {
+    async function handleResetPassword(e) {
         e.preventDefault();
         setPasswordError("");
         setPasswordSuccess("");
 
-        if (!passwordForm.currentPassword) {
+        if (!passwordForm.oldPassword) {
             setPasswordErrors((prev) => ({
                 ...prev,
-                currentPassword: "Current password is required",
+                oldPassword: "Old password is required",
             }));
             return;
         }
@@ -237,23 +250,23 @@ function ProfilePage() {
             return;
         }
 
-        setIsChangingPassword(true);
+        setIsResettingPassword(true);
         try {
-            await authService.changePassword({
-                currentPassword: passwordForm.currentPassword,
+            await authService.resetUserPassword({
+                oldPassword: passwordForm.oldPassword,
                 newPassword: passwordForm.newPassword,
             });
-            setPasswordSuccess(AUTH_MESSAGES.PASSWORD_CHANGE_SUCCESS);
+            setPasswordSuccess("Password has been reset successfully.");
             setPasswordForm({
-                currentPassword: "",
+                oldPassword: "",
                 newPassword: "",
                 confirmPassword: "",
             });
-            setShowChangePassword(false);
+            setPasswordErrors({});
         } catch (err) {
-            setPasswordError(err.message || "Failed to change password");
+            setPasswordError(err.message || "Failed to reset password. Please verify your old password.");
         } finally {
-            setIsChangingPassword(false);
+            setIsResettingPassword(false);
         }
     }
 
@@ -261,168 +274,188 @@ function ProfilePage() {
         <div className="page">
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">User Profile</h1>
+                    <h1 className="page-title">User Account</h1>
                     <p className="card-subtitle">
-                        Manage your account information and security credentials
+                        Manage your profile details and security credentials
                     </p>
                 </div>
             </div>
 
+            <div className="tabs-container">
+                <button
+                    type="button"
+                    className={`tab-btn ${activeTab === "profile" ? "active" : ""}`}
+                    onClick={() => handleTabChange("profile")}
+                >
+                    Profile Details
+                </button>
+                <button
+                    type="button"
+                    className={`tab-btn ${activeTab === "reset-password" ? "active" : ""}`}
+                    onClick={() => handleTabChange("reset-password")}
+                >
+                    Reset Password
+                </button>
+            </div>
+
             <div className="profile-grid">
-                <div className="profile-card">
-                    <div className="profile-header-row">
-                        <h2 className="section-title">Account Details</h2>
-                        {!isEditing && (
-                            <Button
-                                size="small"
-                                variant="secondary"
-                                onClick={() => {
-                                    setIsEditing(true);
-                                    setSuccessMessage("");
-                                }}
-                            >
-                                Edit Profile
-                            </Button>
+                {activeTab === "profile" && (
+                    <div className="profile-card">
+                        <div className="profile-header-row">
+                            <h2 className="section-title">Profile Information</h2>
+                            <div className="profile-action-group">
+                                {!isEditing && (
+                                    <>
+                                        <Button
+                                            size="small"
+                                            variant="secondary"
+                                            onClick={() => {
+                                                setIsEditing(true);
+                                                setSuccessMessage("");
+                                            }}
+                                        >
+                                            Edit Profile
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="secondary"
+                                            onClick={() => handleTabChange("reset-password")}
+                                        >
+                                            Reset Password
+                                        </Button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        <Alert type="success">{successMessage}</Alert>
+                        <Alert>{serverError}</Alert>
+
+                        {loading ? (
+                            <p className="card-subtitle">Loading profile details...</p>
+                        ) : isEditing ? (
+                            <form onSubmit={handleSaveProfile} noValidate className="profile-form">
+                                <Input
+                                    id="profile-name"
+                                    name="name"
+                                    label="Full Name *"
+                                    value={editForm.name}
+                                    onChange={handleEditChange}
+                                    error={editErrors.name}
+                                    disabled={isSavingProfile}
+                                    required
+                                />
+                                <Input
+                                    id="profile-email"
+                                    name="email"
+                                    label="Email (Cannot be modified)"
+                                    value={profile.email || ""}
+                                    disabled
+                                />
+                                <Input
+                                    id="profile-phone"
+                                    name="phone"
+                                    label="Mobile Number *"
+                                    type="tel"
+                                    placeholder="e.g. 9876543210"
+                                    value={editForm.phone}
+                                    onChange={handleEditChange}
+                                    error={editErrors.phone}
+                                    disabled={isSavingProfile}
+                                    required
+                                />
+                                <div className="profile-form-actions">
+                                    <Button type="submit" disabled={isSavingProfile}>
+                                        {isSavingProfile ? "Saving..." : "Save Changes"}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        onClick={handleCancelEdit}
+                                        disabled={isSavingProfile}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </form>
+                        ) : (
+                            <div className="profile-details-list">
+                                <div className="profile-detail-item">
+                                    <span className="profile-detail-label">Full Name</span>
+                                    <span className="profile-detail-value">
+                                        {profile.name || "—"}
+                                    </span>
+                                </div>
+
+                                <div className="profile-detail-item">
+                                    <span className="profile-detail-label">Email Address</span>
+                                    <span className="profile-detail-value">
+                                        {profile.email || "—"}
+                                    </span>
+                                </div>
+
+                                <div className="profile-detail-item">
+                                    <span className="profile-detail-label">Mobile Number</span>
+                                    <span className="profile-detail-value">
+                                        {profile.phone || "Not provided"}
+                                    </span>
+                                </div>
+
+                                <div className="profile-detail-item">
+                                    <span className="profile-detail-label">Role</span>
+                                    <span className="profile-detail-value">
+                                        <Badge variant={getRoleBadgeVariant(profile.role)}>
+                                            {(profile.role || "student").toUpperCase()}
+                                        </Badge>
+                                    </span>
+                                </div>
+
+                                <div className="profile-detail-item">
+                                    <span className="profile-detail-label">Account Status</span>
+                                    <span className="profile-detail-value">
+                                        <Badge
+                                            variant={
+                                                (profile.status || "active").toLowerCase() ===
+                                                "active"
+                                                    ? "success"
+                                                    : "danger"
+                                            }
+                                        >
+                                            {(profile.status || "active").toUpperCase()}
+                                        </Badge>
+                                    </span>
+                                </div>
+                            </div>
                         )}
                     </div>
+                )}
 
-                    <Alert type="success">{successMessage}</Alert>
-                    <Alert>{serverError}</Alert>
-
-                    {loading ? (
-                        <p className="card-subtitle">Loading profile details...</p>
-                    ) : isEditing ? (
-                        <form onSubmit={handleSaveProfile} noValidate className="profile-form">
-                            <Input
-                                id="profile-name"
-                                name="name"
-                                label="Full Name *"
-                                value={editForm.name}
-                                onChange={handleEditChange}
-                                error={editErrors.name}
-                                disabled={isSavingProfile}
-                                required
-                            />
-                            <Input
-                                id="profile-email"
-                                name="email"
-                                label="Email (Cannot be modified)"
-                                value={profile.email || ""}
-                                disabled
-                            />
-                            <Input
-                                id="profile-phone"
-                                name="phone"
-                                label="Mobile Number *"
-                                type="tel"
-                                placeholder="e.g. 9876543210"
-                                value={editForm.phone}
-                                onChange={handleEditChange}
-                                error={editErrors.phone}
-                                disabled={isSavingProfile}
-                                required
-                            />
-                            <div className="profile-form-actions">
-                                <Button type="submit" disabled={isSavingProfile}>
-                                    {isSavingProfile ? "Saving..." : "Save Changes"}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    onClick={handleCancelEdit}
-                                    disabled={isSavingProfile}
-                                >
-                                    Cancel
-                                </Button>
-                            </div>
-                        </form>
-                    ) : (
-                        <div className="profile-details-list">
-                            <div className="profile-detail-item">
-                                <span className="profile-detail-label">Full Name</span>
-                                <span className="profile-detail-value">
-                                    {profile.name || "—"}
-                                </span>
-                            </div>
-
-                            <div className="profile-detail-item">
-                                <span className="profile-detail-label">Email Address</span>
-                                <span className="profile-detail-value">
-                                    {profile.email || "—"}
-                                </span>
-                            </div>
-
-                            <div className="profile-detail-item">
-                                <span className="profile-detail-label">Mobile Number</span>
-                                <span className="profile-detail-value">
-                                    {profile.phone || "Not provided"}
-                                </span>
-                            </div>
-
-                            <div className="profile-detail-item">
-                                <span className="profile-detail-label">Role</span>
-                                <span className="profile-detail-value">
-                                    <Badge variant={getRoleBadgeVariant(profile.role)}>
-                                        {(profile.role || "student").toUpperCase()}
-                                    </Badge>
-                                </span>
-                            </div>
-
-                            <div className="profile-detail-item">
-                                <span className="profile-detail-label">Account Status</span>
-                                <span className="profile-detail-value">
-                                    <Badge
-                                        variant={
-                                            (profile.status || "active").toLowerCase() ===
-                                            "active"
-                                                ? "success"
-                                                : "danger"
-                                        }
-                                    >
-                                        {(profile.status || "active").toUpperCase()}
-                                    </Badge>
-                                </span>
+                {/* Reset Password Tab */}
+                {activeTab === "reset-password" && (
+                    <div className="profile-card">
+                        <div className="profile-header-row">
+                            <div>
+                                <h2 className="section-title">Reset Password</h2>
+                                <p className="card-subtitle">
+                                    Enter your old password, enter your new password, and confirm new password to update.
+                                </p>
                             </div>
                         </div>
-                    )}
-                </div>
 
-                {/* Password Management Card */}
-                <div className="profile-card">
-                    <div className="profile-header-row">
-                        <div>
-                            <h2 className="section-title">Security & Password</h2>
-                            <p className="card-subtitle">
-                                Change your current password to keep your account safe
-                            </p>
-                        </div>
-                        <Button
-                            size="small"
-                            variant="secondary"
-                            onClick={() => {
-                                setShowChangePassword((prev) => !prev);
-                                setPasswordError("");
-                                setPasswordSuccess("");
-                            }}
-                        >
-                            {showChangePassword ? "Cancel" : "Change Password"}
-                        </Button>
-                    </div>
+                        <Alert type="success">{passwordSuccess}</Alert>
+                        <Alert>{passwordError}</Alert>
 
-                    <Alert type="success">{passwordSuccess}</Alert>
-                    <Alert>{passwordError}</Alert>
-
-                    {showChangePassword && (
-                        <form onSubmit={handleSubmitPassword} noValidate className="profile-form">
+                        <form onSubmit={handleResetPassword} noValidate className="profile-form">
                             <Input
-                                id="currentPassword"
-                                name="currentPassword"
-                                label="Current Password *"
+                                id="oldPassword"
+                                name="oldPassword"
+                                label="Old Password *"
                                 type="password"
-                                value={passwordForm.currentPassword}
+                                placeholder="Enter your current/old password"
+                                value={passwordForm.oldPassword}
                                 onChange={handlePasswordChange}
-                                error={passwordErrors.currentPassword}
-                                disabled={isChangingPassword}
+                                error={passwordErrors.oldPassword}
+                                disabled={isResettingPassword}
                                 required
                             />
                             <Input
@@ -430,40 +463,34 @@ function ProfilePage() {
                                 name="newPassword"
                                 label="New Password *"
                                 type="password"
+                                placeholder="Enter your new password"
                                 value={passwordForm.newPassword}
                                 onChange={handlePasswordChange}
                                 error={passwordErrors.newPassword}
-                                disabled={isChangingPassword}
+                                disabled={isResettingPassword}
                                 required
                             />
                             <PasswordRequirements password={passwordForm.newPassword} />
                             <Input
-                                id="confirmNewPassword"
+                                id="confirmPassword"
                                 name="confirmPassword"
-                                label="Confirm New Password *"
+                                label="Confirm Password *"
                                 type="password"
+                                placeholder="Confirm your new password"
                                 value={passwordForm.confirmPassword}
                                 onChange={handlePasswordChange}
                                 error={passwordErrors.confirmPassword}
-                                disabled={isChangingPassword}
+                                disabled={isResettingPassword}
                                 required
                             />
                             <div className="profile-form-actions">
-                                <Button type="submit" disabled={isChangingPassword}>
-                                    {isChangingPassword ? "Updating..." : "Update Password"}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    onClick={() => setShowChangePassword(false)}
-                                    disabled={isChangingPassword}
-                                >
-                                    Cancel
+                                <Button type="submit" disabled={isResettingPassword}>
+                                    {isResettingPassword ? "Resetting Password..." : "Reset Password"}
                                 </Button>
                             </div>
                         </form>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </div>
     );

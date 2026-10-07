@@ -86,10 +86,6 @@ function LoginPage() {
                 </Button>
             </form>
             <p className="auth-switch">
-                Forgot password?{" "}
-                <Link to={ROUTES.RESET_PASSWORD}>Reset password here</Link>
-            </p>
-            <p className="auth-switch">
                 Don&apos;t have an account?{" "}
                 <Link to={ROUTES.REGISTER}>Register here</Link>
             </p>

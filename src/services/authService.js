@@ -89,12 +89,16 @@ export const authService = {
         return updatedUser;
     },
 
-    async changePassword(passwordData) {
+    async resetUserPassword(passwordData) {
         const payload = {
-            currentPassword: passwordData.currentPassword,
+            oldPassword: passwordData.oldPassword || passwordData.currentPassword,
             newPassword: passwordData.newPassword,
         };
         return api.post(API_ENDPOINTS.CHANGE_PASSWORD, payload);
+    },
+
+    async changePassword(passwordData) {
+        return this.resetUserPassword(passwordData);
     },
 
     async switchRole(role) {

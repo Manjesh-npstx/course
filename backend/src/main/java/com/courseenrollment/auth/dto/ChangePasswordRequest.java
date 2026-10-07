@@ -8,7 +8,9 @@ import jakarta.validation.constraints.Size;
 public class ChangePasswordRequest {
 
     @Schema(example = "OldPass@123")
-    @NotBlank(message = "Current password is required")
+    private String oldPassword;
+
+    @Schema(example = "OldPass@123")
     private String currentPassword;
 
     @Schema(example = "NewPass@1234", minLength = 8)
@@ -23,17 +25,38 @@ public class ChangePasswordRequest {
     public ChangePasswordRequest() {
     }
 
-    public ChangePasswordRequest(String currentPassword, String newPassword) {
-        this.currentPassword = currentPassword;
+    public ChangePasswordRequest(String oldPassword, String newPassword) {
+        this.oldPassword = oldPassword;
+        this.currentPassword = oldPassword;
         this.newPassword = newPassword;
     }
 
-    public String getCurrentPassword() {
+    public String getOldPassword() {
+        if (oldPassword != null && !oldPassword.trim().isEmpty()) {
+            return oldPassword;
+        }
         return currentPassword;
+    }
+
+    public void setOldPassword(String oldPassword) {
+        this.oldPassword = oldPassword;
+        if (this.currentPassword == null) {
+            this.currentPassword = oldPassword;
+        }
+    }
+
+    public String getCurrentPassword() {
+        if (currentPassword != null && !currentPassword.trim().isEmpty()) {
+            return currentPassword;
+        }
+        return oldPassword;
     }
 
     public void setCurrentPassword(String currentPassword) {
         this.currentPassword = currentPassword;
+        if (this.oldPassword == null) {
+            this.oldPassword = currentPassword;
+        }
     }
 
     public String getNewPassword() {

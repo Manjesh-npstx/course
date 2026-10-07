@@ -43,9 +43,10 @@ function App() {
                     <Route
                         path={ROUTES.RESET_PASSWORD}
                         element={
-                            <PageLayout>
-                                <ResetPasswordPage />
-                            </PageLayout>
+                            <Navigate
+                                to={`${ROUTES.PROFILE}?tab=reset-password`}
+                                replace
+                            />
                         }
                     />
 

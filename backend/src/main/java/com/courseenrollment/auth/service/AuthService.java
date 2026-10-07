@@ -232,8 +232,13 @@ public class AuthService {
         User user = userRepository.findByEmail(email.trim())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Current password does not match");
+        String oldPass = req.getOldPassword();
+        if (oldPass == null || oldPass.trim().isEmpty()) {
+            throw new BadCredentialsException("Old password is required");
+        }
+
+        if (!passwordEncoder.matches(oldPass, user.getPassword())) {
+            throw new BadCredentialsException("Old password does not match");
         }
 
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));

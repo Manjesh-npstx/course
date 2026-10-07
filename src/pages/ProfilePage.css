@@ -1,3 +1,43 @@
+.tabs-container {
+    display: flex;
+    gap: var(--spacing-small);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--spacing-medium);
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.tabs-container::-webkit-scrollbar {
+    display: none;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tab-btn:hover {
+    color: var(--text);
+}
+
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+}
+
 .profile-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -21,6 +61,12 @@
     padding-bottom: var(--spacing-medium);
     margin-bottom: var(--spacing-large);
     flex-wrap: wrap;
+    gap: var(--spacing-small);
+}
+
+.profile-action-group {
+    display: flex;
+    align-items: center;
     gap: var(--spacing-small);
 }
 

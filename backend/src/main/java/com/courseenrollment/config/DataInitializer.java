@@ -43,40 +43,54 @@ public class DataInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         if (!userRepository.existsByEmail("admin@campus.com")) {
-            String hashed = passwordEncoder.encode("admin123");
+            String hashed = passwordEncoder.encode("Admin@1234");
             User admin = new User("admin@campus.com", "Admin User", hashed, UserRole.ADMIN, UserStatus.ACTIVE, "9876543210");
             userRepository.save(admin);
-            log.info("Seeded admin account: admin@campus.com / admin123 (phone: 9876543210)");
+            log.info("Seeded admin account: admin@campus.com / Admin@1234 (phone: 9876543210)");
+        }
+
+        if (!userRepository.existsByEmail("instructor1@campus.com")) {
+            String hashed = passwordEncoder.encode("Instructor@1234");
+            User instructor1 = new User("instructor1@campus.com", "Dr. Jane Instructor", hashed, UserRole.INSTRUCTOR, UserStatus.ACTIVE, "9876543211");
+            userRepository.save(instructor1);
+            log.info("Seeded instructor 1: instructor1@campus.com / Instructor@1234 (phone: 9876543211)");
+        }
+
+        if (!userRepository.existsByEmail("instructor2@campus.com")) {
+            String hashed = passwordEncoder.encode("Instructor@1234");
+            User instructor2 = new User("instructor2@campus.com", "Dr. Alan Turing", hashed, UserRole.INSTRUCTOR, UserStatus.ACTIVE, "9876543213");
+            userRepository.save(instructor2);
+            log.info("Seeded instructor 2: instructor2@campus.com / Instructor@1234 (phone: 9876543213)");
         }
 
         if (!userRepository.existsByEmail("instructor@campus.com")) {
-            String hashed = passwordEncoder.encode("instructor123");
-            User instructor = new User("instructor@campus.com", "Dr. Jane Instructor", hashed, UserRole.INSTRUCTOR, UserStatus.ACTIVE, "9876543211");
-            userRepository.save(instructor);
-            log.info("Seeded instructor account: instructor@campus.com / instructor123 (phone: 9876543211)");
+            String hashed = passwordEncoder.encode("Instructor@1234");
+            User instructorLegacy = new User("instructor@campus.com", "Dr. Jane Instructor", hashed, UserRole.INSTRUCTOR, UserStatus.ACTIVE, "9876543211");
+            userRepository.save(instructorLegacy);
+            log.info("Seeded legacy instructor alias: instructor@campus.com / Instructor@1234");
         }
 
         User student = null;
         if (!userRepository.existsByEmail("student@campus.com")) {
-            String hashed = passwordEncoder.encode("student123");
+            String hashed = passwordEncoder.encode("Student@1234");
             student = new User("student@campus.com", "Alice Student", hashed, UserRole.STUDENT, UserStatus.ACTIVE, "9876543212");
             student = userRepository.save(student);
-            log.info("Seeded student account: student@campus.com / student123 (phone: 9876543212)");
+            log.info("Seeded student account: student@campus.com / Student@1234 (phone: 9876543212)");
         } else {
             student = userRepository.findByEmail("student@campus.com").orElse(null);
         }
 
         if (courseRepository.count() == 0) {
-            Course webDev = new Course("Web Development", "Dr. Jane Instructor", 30, CourseStatus.APPROVED, "instructor@campus.com");
+            Course webDev = new Course("Web Development", "Dr. Jane Instructor", 30, CourseStatus.APPROVED, "instructor1@campus.com");
             webDev = courseRepository.save(webDev);
 
-            Course dsa = new Course("Data Structures & Algorithms", "Dr. Jane Instructor", 35, CourseStatus.APPROVED, "instructor@campus.com");
-            courseRepository.save(dsa);
+            Course ai = new Course("Artificial Intelligence & Neural Networks", "Dr. Alan Turing", 35, CourseStatus.APPROVED, "instructor2@campus.com");
+            courseRepository.save(ai);
 
-            Course cloud = new Course("Cloud Computing Architecture", "Dr. Jane Instructor", 20, CourseStatus.PENDING, "instructor@campus.com");
+            Course cloud = new Course("Cloud Computing Architecture", "Dr. Jane Instructor", 20, CourseStatus.PENDING, "instructor1@campus.com");
             courseRepository.save(cloud);
 
-            log.info("Seeded courses: Web Development (APPROVED), Data Structures & Algorithms (APPROVED), Cloud Computing Architecture (PENDING)");
+            log.info("Seeded courses: Web Development (APPROVED), Artificial Intelligence & Neural Networks (APPROVED), Cloud Computing Architecture (PENDING)");
 
             if (student != null) {
                 Student enrolled = new Student(student.getName(), student.getEmail(), LocalDate.now().toString(), webDev);

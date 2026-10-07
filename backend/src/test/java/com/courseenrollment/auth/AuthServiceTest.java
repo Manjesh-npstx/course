@@ -288,6 +288,6 @@ class AuthServiceTest {
 
         assertThatThrownBy(() -> authService.changePassword("admin@test.com", req))
                 .isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Current password does not match");
+                .hasMessage("Old password does not match");
     }
 }
