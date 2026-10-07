@@ -30,6 +30,7 @@ public class UserDto {
         this.role = role;
         this.status = status;
         this.phone = phone;
+        this.enrolledCourses = java.util.Collections.emptyList();
     }
 
     public static UserDto fromEntity(com.courseenrollment.auth.entity.User user) {

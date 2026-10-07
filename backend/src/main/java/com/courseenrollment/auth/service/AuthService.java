@@ -24,6 +24,28 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.courseenrollment.student.repository.StudentRepository studentRepository;
+
+    public void setStudentRepository(com.courseenrollment.student.repository.StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
+    }
+
+    private UserDto toUserDto(User user) {
+        if (user == null) return null;
+        UserDto dto = UserDto.fromEntity(user);
+        if (user.getRole() == UserRole.STUDENT && studentRepository != null) {
+            java.util.List<String> courses = studentRepository.findEnrolledCoursesByEmail(user.getEmail())
+                    .stream()
+                    .map(com.courseenrollment.course.entity.Course::getName)
+                    .collect(java.util.stream.Collectors.toList());
+            dto.setEnrolledCourses(courses);
+        } else {
+            dto.setEnrolledCourses(java.util.Collections.emptyList());
+        }
+        return dto;
+    }
+
     @org.springframework.beans.factory.annotation.Autowired
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
@@ -79,7 +101,7 @@ public class AuthService {
             refreshTokenStr = rt.getToken();
         }
 
-        return new AuthResponse(UserDto.fromEntity(savedUser), token, refreshTokenStr);
+        return new AuthResponse(toUserDto(savedUser), token, refreshTokenStr);
     }
 
     @Transactional
@@ -115,7 +137,7 @@ public class AuthService {
             refreshTokenStr = rt.getToken();
         }
 
-        return new AuthResponse(UserDto.fromEntity(savedUser), token, refreshTokenStr);
+        return new AuthResponse(toUserDto(savedUser), token, refreshTokenStr);
     }
 
     @Transactional
@@ -143,7 +165,7 @@ public class AuthService {
             refreshTokenStr = rt.getToken();
         }
 
-        return new AuthResponse(UserDto.fromEntity(user), token, refreshTokenStr);
+        return new AuthResponse(toUserDto(user), token, refreshTokenStr);
     }
 
     @Transactional
@@ -168,7 +190,7 @@ public class AuthService {
 
         RefreshToken rotatedToken = refreshTokenService.rotateRefreshToken(refreshToken);
 
-        return new AuthResponse(UserDto.fromEntity(user), newAccessToken, rotatedToken.getToken());
+        return new AuthResponse(toUserDto(user), newAccessToken, rotatedToken.getToken());
     }
 
     @Transactional
@@ -208,7 +230,7 @@ public class AuthService {
     public UserDto getProfile(String email) {
         User user = userRepository.findByEmail(email.trim())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return UserDto.fromEntity(user);
+        return toUserDto(user);
     }
 
     @org.springframework.beans.factory.annotation.Autowired(required = false)
@@ -238,7 +260,7 @@ public class AuthService {
             courseRepository.updateInstructorName(email.trim(), req.getName().trim());
         }
 
-        return UserDto.fromEntity(updated);
+        return toUserDto(updated);
     }
 
     @Transactional
