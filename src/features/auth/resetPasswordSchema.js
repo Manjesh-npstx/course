@@ -1,29 +1,20 @@
 import { z } from "zod";
 import { AUTH_MESSAGES } from "@/constants/messages";
-import { isValidPhoneNumber, passwordSchema } from "./registerSchema";
+import { passwordSchema } from "./registerSchema";
 
 export const INITIAL_RESET_PASSWORD_FORM = {
-    email: "",
-    phone: "",
+    oldPassword: "",
     newPassword: "",
     confirmPassword: "",
 };
 
 export const RESET_PASSWORD_FIELDS = [
     {
-        id: "email",
-        name: "email",
-        label: "Registered Email *",
-        type: "email",
-        placeholder: "e.g. user@campus.com",
-        required: true,
-    },
-    {
-        id: "phone",
-        name: "phone",
-        label: "Registered Mobile Number *",
-        type: "tel",
-        placeholder: "e.g. 9876543210",
+        id: "oldPassword",
+        name: "oldPassword",
+        label: "Old Password *",
+        type: "password",
+        placeholder: "Enter your current/old password",
         required: true,
     },
     {
@@ -31,27 +22,23 @@ export const RESET_PASSWORD_FIELDS = [
         name: "newPassword",
         label: "New Password *",
         type: "password",
+        placeholder: "Enter your new password",
         required: true,
     },
     {
         id: "confirmPassword",
         name: "confirmPassword",
-        label: "Confirm New Password *",
+        label: "Confirm Password *",
         type: "password",
+        placeholder: "Confirm your new password",
         required: true,
     },
 ];
 
 const baseResetPasswordSchema = z.object({
-    email: z.string().email(AUTH_MESSAGES.EMAIL_INVALID),
-    phone: z
-        .string()
-        .min(1, AUTH_MESSAGES.PHONE_REQUIRED)
-        .refine(isValidPhoneNumber, {
-            message: AUTH_MESSAGES.PHONE_INVALID,
-        }),
+    oldPassword: z.string().min(1, "Old password is required"),
     newPassword: passwordSchema,
-    confirmPassword: z.string(),
+    confirmPassword: z.string().min(1, AUTH_MESSAGES.CONFIRM_PASSWORD_REQUIRED),
 });
 
 export const resetPasswordSchema = baseResetPasswordSchema.refine(
@@ -83,8 +70,7 @@ export function validateResetPasswordField(fieldName, value, allValues) {
 
 export function mapResetPasswordErrors(fieldErrors) {
     return {
-        email: fieldErrors.email?.[0] || "",
-        phone: fieldErrors.phone?.[0] || "",
+        oldPassword: fieldErrors.oldPassword?.[0] || "",
         newPassword: fieldErrors.newPassword?.[0] || "",
         confirmPassword: fieldErrors.confirmPassword?.[0] || "",
     };

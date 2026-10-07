@@ -31,8 +31,7 @@ export function EnrollStudentModal({
     const courseId = preselectedCourseId
         ? String(preselectedCourseId)
         : customCourseId;
-    const selectedEmail =
-        effectivePreselectedStudent?.email || customEmail;
+    const selectedEmail = effectivePreselectedStudent?.email || customEmail;
     const studentsList =
         registeredStudents.length > 0 ? registeredStudents : fetchedStudents;
 
@@ -138,9 +137,7 @@ export function EnrollStudentModal({
                 if (
                     sIds.has(Number(customCourseId)) ||
                     (curCourse &&
-                        sNames.has(
-                            String(curCourse.name).trim().toLowerCase()
-                        ))
+                        sNames.has(String(curCourse.name).trim().toLowerCase()))
                 ) {
                     setCustomCourseId("");
                 }
@@ -264,9 +261,7 @@ export function EnrollStudentModal({
                     <div className="input-group">
                         <label className="input-label">Student</label>
                         <p className="card-description">
-                            <strong>
-                                {effectivePreselectedStudent.name}
-                            </strong>{" "}
+                            <strong>{effectivePreselectedStudent.name}</strong>{" "}
                             ({effectivePreselectedStudent.email})
                         </p>
                     </div>
@@ -314,8 +309,8 @@ export function EnrollStudentModal({
                                     marginTop: "4px",
                                 }}
                             >
-                                This student is already enrolled in all
-                                approved courses.
+                                This student is already enrolled in all approved
+                                courses.
                             </p>
                         )}
                     </div>

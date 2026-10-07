@@ -109,52 +109,57 @@ export function EditStudentModal({
                     disabled={isSubmitting}
                     required
                 />
-                {courses.length > 0 && (() => {
-                    const selectableCourses = courses.filter((c) => {
-                        const cId = Number(c.id);
-                        if (
-                            cId !== currentCourseId &&
-                            enrolledCourseIds.includes(cId)
-                        ) {
-                            return false;
-                        }
-                        if (
-                            cId !== currentCourseId &&
-                            c.name &&
-                            enrolledCourseNames.includes(
-                                String(c.name).trim().toLowerCase()
-                            )
-                        ) {
-                            return false;
-                        }
-                        return true;
-                    });
+                {courses.length > 0 &&
+                    (() => {
+                        const selectableCourses = courses.filter((c) => {
+                            const cId = Number(c.id);
+                            if (
+                                cId !== currentCourseId &&
+                                enrolledCourseIds.includes(cId)
+                            ) {
+                                return false;
+                            }
+                            if (
+                                cId !== currentCourseId &&
+                                c.name &&
+                                enrolledCourseNames.includes(
+                                    String(c.name).trim().toLowerCase()
+                                )
+                            ) {
+                                return false;
+                            }
+                            return true;
+                        });
 
-                    return (
-                        <div className="input-group">
-                            <label
-                                htmlFor="edit-course-select"
-                                className="input-label"
-                            >
-                                Change Course
-                            </label>
-                            <select
-                                id="edit-course-select"
-                                className="input-field"
-                                value={courseId}
-                                onChange={(e) => setCourseId(e.target.value)}
-                                disabled={isSubmitting}
-                            >
-                                <option value="">Keep current course</option>
-                                {selectableCourses.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.name} ({c.instructor})
+                        return (
+                            <div className="input-group">
+                                <label
+                                    htmlFor="edit-course-select"
+                                    className="input-label"
+                                >
+                                    Change Course
+                                </label>
+                                <select
+                                    id="edit-course-select"
+                                    className="input-field"
+                                    value={courseId}
+                                    onChange={(e) =>
+                                        setCourseId(e.target.value)
+                                    }
+                                    disabled={isSubmitting}
+                                >
+                                    <option value="">
+                                        Keep current course
                                     </option>
-                                ))}
-                            </select>
-                        </div>
-                    );
-                })()}
+                                    {selectableCourses.map((c) => (
+                                        <option key={c.id} value={c.id}>
+                                            {c.name} ({c.instructor})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        );
+                    })()}
                 <div className="modal-actions">
                     <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? "Saving..." : "Save Changes"}

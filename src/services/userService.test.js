@@ -48,16 +48,14 @@ describe("userService", () => {
     });
 
     it("getActiveInstructors calls api.get with /users/instructors", async () => {
-        const getSpy = vi
-            .spyOn(api, "get")
-            .mockResolvedValue([
-                {
-                    id: 4,
-                    name: "Dr. Jane",
-                    email: "jane@campus.com",
-                    role: "instructor",
-                },
-            ]);
+        const getSpy = vi.spyOn(api, "get").mockResolvedValue([
+            {
+                id: 4,
+                name: "Dr. Jane",
+                email: "jane@campus.com",
+                role: "instructor",
+            },
+        ]);
 
         const res = await userService.getActiveInstructors();
 

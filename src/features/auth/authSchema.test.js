@@ -219,8 +219,7 @@ describe("registerSchema", () => {
 describe("resetPasswordSchema", () => {
     it("passes validation with valid reset password details", () => {
         const result = resetPasswordSchema.safeParse({
-            email: "student@campus.com",
-            phone: "9876543210",
+            oldPassword: "CurrentPassword@123",
             newPassword: "SecurePass@123",
             confirmPassword: "SecurePass@123",
         });
@@ -229,38 +228,27 @@ describe("resetPasswordSchema", () => {
 
     it("fails validation when passwords do not match", () => {
         const result = resetPasswordSchema.safeParse({
-            email: "student@campus.com",
-            phone: "9876543210",
+            oldPassword: "CurrentPassword@123",
             newPassword: "SecurePass@123",
             confirmPassword: "MismatchPass@456",
         });
         expect(result.success).toBe(false);
     });
 
-    it("fails validation with invalid phone or email", () => {
+    it("fails validation when oldPassword is missing or newPassword is invalid", () => {
         const result = resetPasswordSchema.safeParse({
-            email: "not-an-email",
-            phone: "123",
-            newPassword: "SecurePass@123",
-            confirmPassword: "SecurePass@123",
+            oldPassword: "",
+            newPassword: "short",
+            confirmPassword: "short",
         });
         expect(result.success).toBe(false);
     });
 
     it("validates reset password fields in real-time", () => {
-        expect(validateResetPasswordField("email", "invalid", {})).not.toBe("");
-        expect(validateResetPasswordField("email", "user@campus.com", {})).toBe(
-            ""
-        );
-        expect(validateResetPasswordField("phone", "12", {})).not.toBe("");
-        expect(validateResetPasswordField("phone", "9876543", {})).not.toBe("");
-        expect(validateResetPasswordField("phone", "98765432", {})).not.toBe(
-            ""
-        );
-        expect(validateResetPasswordField("phone", "987654321", {})).not.toBe(
-            ""
-        );
-        expect(validateResetPasswordField("phone", "9876543210", {})).toBe("");
+        expect(validateResetPasswordField("oldPassword", "", {})).not.toBe("");
+        expect(
+            validateResetPasswordField("oldPassword", "CurrentPassword@123", {})
+        ).toBe("");
         expect(validateResetPasswordField("newPassword", "short", {})).not.toBe(
             ""
         );
@@ -272,5 +260,10 @@ describe("resetPasswordSchema", () => {
                 newPassword: "SecurePass@123",
             })
         ).not.toBe("");
+        expect(
+            validateResetPasswordField("confirmPassword", "SecurePass@123", {
+                newPassword: "SecurePass@123",
+            })
+        ).toBe("");
     });
 });
