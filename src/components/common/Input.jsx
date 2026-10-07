@@ -18,6 +18,26 @@ import "./Input.css";
  * @param {string} [props.helperText] - Accessible helper text.
  * @returns {JSX.Element}
  */
+function formatLabel(label, required) {
+    if (typeof label !== "string") return label;
+    if (label.endsWith("*")) {
+        const text = label.slice(0, -1).trimEnd();
+        return (
+            <>
+                {text} <span className="required-asterisk" aria-hidden="true">*</span>
+            </>
+        );
+    }
+    if (required) {
+        return (
+            <>
+                {label} <span className="required-asterisk" aria-hidden="true">*</span>
+            </>
+        );
+    }
+    return label;
+}
+
 function Input({
     id,
     label,
@@ -28,6 +48,7 @@ function Input({
     error,
     disabled,
     helperText,
+    required,
 }) {
     const [showPassword, setShowPassword] = useState(false);
     const hasError = Boolean(error);
@@ -42,7 +63,7 @@ function Input({
     return (
         <div className="input-container">
             <label htmlFor={id} className="input-label">
-                {label}
+                {formatLabel(label, required)}
             </label>
 
             <div className="input-wrapper">
@@ -53,6 +74,7 @@ function Input({
                     value={value}
                     onChange={onChange}
                     disabled={disabled}
+                    required={required}
                     className={`input-field ${hasError ? "input-error" : ""} ${
                         isPasswordField ? "input-field-has-toggle" : ""
                     }`}
@@ -136,6 +158,7 @@ Input.propTypes = {
     error: PropTypes.string,
     disabled: PropTypes.bool,
     helperText: PropTypes.string,
+    required: PropTypes.bool,
 };
 
 Input.defaultProps = {
@@ -143,6 +166,7 @@ Input.defaultProps = {
     error: "",
     disabled: false,
     helperText: "",
+    required: false,
 };
 
 export default Input;

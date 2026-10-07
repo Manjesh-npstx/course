@@ -8,7 +8,9 @@ import { AuthProvider } from "@/context/AuthProvider";
 import CourseDetailPage from "@/pages/CourseDetailPage";
 import CoursesPage from "@/pages/CoursesPage";
 import LoginPage from "@/pages/LoginPage";
+import ProfilePage from "@/pages/ProfilePage";
 import RegisterPage from "@/pages/RegisterPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import StudentsPage from "@/pages/StudentsPage";
 
 /**
@@ -35,6 +37,14 @@ function App() {
                         element={
                             <PageLayout>
                                 <RegisterPage />
+                            </PageLayout>
+                        }
+                    />
+                    <Route
+                        path={ROUTES.RESET_PASSWORD}
+                        element={
+                            <PageLayout>
+                                <ResetPasswordPage />
                             </PageLayout>
                         }
                     />
@@ -67,6 +77,10 @@ function App() {
                                     <StudentsPage />
                                 </ProtectedRoute>
                             }
+                        />
+                        <Route
+                            path={ROUTES.PROFILE}
+                            element={<ProfilePage />}
                         />
                         <Route
                             path={ROUTES.HOME}

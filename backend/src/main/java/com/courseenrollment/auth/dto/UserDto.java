@@ -7,6 +7,7 @@ public class UserDto {
     private Long id;
     private String name;
     private String email;
+    private String phone;
     private String role;
     private String status;
     private java.util.List<String> enrolledCourses;
@@ -15,15 +16,20 @@ public class UserDto {
     }
 
     public UserDto(Long id, String name, String email, String role) {
-        this(id, name, email, role, UserStatus.ACTIVE.getValue());
+        this(id, name, email, role, UserStatus.ACTIVE.getValue(), null);
     }
 
     public UserDto(Long id, String name, String email, String role, String status) {
+        this(id, name, email, role, status, null);
+    }
+
+    public UserDto(Long id, String name, String email, String role, String status, String phone) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.role = role;
         this.status = status;
+        this.phone = phone;
     }
 
     public static UserDto fromEntity(com.courseenrollment.auth.entity.User user) {
@@ -32,7 +38,8 @@ public class UserDto {
                 user.getName(),
                 user.getEmail(),
                 user.getRole() != null ? user.getRole().getValue() : UserRole.STUDENT.getValue(),
-                user.getStatus() != null ? user.getStatus().getValue() : UserStatus.ACTIVE.getValue()
+                user.getStatus() != null ? user.getStatus().getValue() : UserStatus.ACTIVE.getValue(),
+                user.getPhone()
         );
     }
 
@@ -58,6 +65,14 @@ public class UserDto {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getRole() {

@@ -36,6 +36,7 @@ export const authService = {
             const payload = {
                 name: userData.name,
                 email: userData.email,
+                phone: userData.phone,
                 password: userData.password,
             };
             const data = await api.post(API_ENDPOINTS.REGISTER, payload);
@@ -54,6 +55,46 @@ export const authService = {
                 cause: err,
             });
         }
+    },
+
+    async resetPassword(resetData) {
+        try {
+            const payload = {
+                email: resetData.email,
+                phone: resetData.phone,
+                newPassword: resetData.newPassword,
+            };
+            return await api.post(API_ENDPOINTS.RESET_PASSWORD, payload);
+        } catch (err) {
+            throw new Error(err.message || "Password reset failed", {
+                cause: err,
+            });
+        }
+    },
+
+    async getProfile() {
+        return api.get(API_ENDPOINTS.ME);
+    },
+
+    async updateProfile(profileData) {
+        const payload = {
+            name: profileData.name,
+            phone: profileData.phone,
+        };
+        const updatedUser = await api.put(API_ENDPOINTS.ME, payload);
+        if (updatedUser) {
+            const currentUser = tokenStorage.getUser() || {};
+            tokenStorage.setUser({ ...currentUser, ...updatedUser });
+        }
+        return updatedUser;
+    },
+
+    async changePassword(passwordData) {
+        const payload = {
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.newPassword,
+        };
+        return api.post(API_ENDPOINTS.CHANGE_PASSWORD, payload);
     },
 
     async switchRole(role) {

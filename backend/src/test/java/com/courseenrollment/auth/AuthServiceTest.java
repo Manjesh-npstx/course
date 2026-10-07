@@ -203,4 +203,91 @@ class AuthServiceTest {
         authService.logout("refresh-to-revoke");
         verify(refreshTokenService).revokeToken("refresh-to-revoke");
     }
+
+    @Test
+    @DisplayName("resetPassword should update password and revoke tokens when email and phone match")
+    void resetPassword_success() {
+        mockUser.setPhone("9876543210");
+        com.courseenrollment.auth.dto.ResetPasswordRequest req = new com.courseenrollment.auth.dto.ResetPasswordRequest("admin@test.com", "9876543210", "NewPass@123");
+
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.encode("NewPass@123")).thenReturn("$2a$10$newhashed");
+
+        authService.resetPassword(req);
+
+        verify(passwordEncoder).encode("NewPass@123");
+        verify(refreshTokenService).revokeAllUserTokens(mockUser);
+        verify(userRepository).save(mockUser);
+        assertThat(mockUser.getPassword()).isEqualTo("$2a$10$newhashed");
+    }
+
+    @Test
+    @DisplayName("resetPassword should throw BadRequestException when phone does not match")
+    void resetPassword_phoneMismatch() {
+        mockUser.setPhone("9876543210");
+        com.courseenrollment.auth.dto.ResetPasswordRequest req = new com.courseenrollment.auth.dto.ResetPasswordRequest("admin@test.com", "9999999999", "NewPass@123");
+
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(mockUser));
+
+        assertThatThrownBy(() -> authService.resetPassword(req))
+                .isInstanceOf(com.courseenrollment.common.exception.BadRequestException.class)
+                .hasMessage("Mobile number does not match registered account details");
+    }
+
+    @Test
+    @DisplayName("getProfile should return UserDto with phone")
+    void getProfile_success() {
+        mockUser.setPhone("9876543210");
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(mockUser));
+
+        com.courseenrollment.auth.dto.UserDto dto = authService.getProfile("admin@test.com");
+
+        assertThat(dto).isNotNull();
+        assertThat(dto.getEmail()).isEqualTo("admin@test.com");
+        assertThat(dto.getPhone()).isEqualTo("9876543210");
+    }
+
+    @Test
+    @DisplayName("updateProfile should update name and phone")
+    void updateProfile_success() {
+        mockUser.setPhone("9876543210");
+        com.courseenrollment.auth.dto.UpdateProfileRequest req = new com.courseenrollment.auth.dto.UpdateProfileRequest("Admin Updated", "9123456789");
+
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(mockUser));
+        when(userRepository.save(any(User.class))).thenReturn(mockUser);
+
+        com.courseenrollment.auth.dto.UserDto dto = authService.updateProfile("admin@test.com", req);
+
+        assertThat(mockUser.getName()).isEqualTo("Admin Updated");
+        assertThat(mockUser.getPhone()).isEqualTo("9123456789");
+    }
+
+    @Test
+    @DisplayName("changePassword should update password when current password matches")
+    void changePassword_success() {
+        com.courseenrollment.auth.dto.ChangePasswordRequest req = new com.courseenrollment.auth.dto.ChangePasswordRequest("CurrentPass@123", "NewPass@123");
+
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.matches("CurrentPass@123", "$2a$10$hashed")).thenReturn(true);
+        when(passwordEncoder.encode("NewPass@123")).thenReturn("$2a$10$newhashed");
+
+        authService.changePassword("admin@test.com", req);
+
+        verify(refreshTokenService).revokeAllUserTokens(mockUser);
+        verify(userRepository).save(mockUser);
+        assertThat(mockUser.getPassword()).isEqualTo("$2a$10$newhashed");
+    }
+
+    @Test
+    @DisplayName("changePassword should throw BadCredentialsException when current password is wrong")
+    void changePassword_wrongCurrentPassword() {
+        com.courseenrollment.auth.dto.ChangePasswordRequest req = new com.courseenrollment.auth.dto.ChangePasswordRequest("WrongPass@123", "NewPass@123");
+
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.matches("WrongPass@123", "$2a$10$hashed")).thenReturn(false);
+
+        assertThatThrownBy(() -> authService.changePassword("admin@test.com", req))
+                .isInstanceOf(BadCredentialsException.class)
+                .hasMessage("Current password does not match");
+    }
 }

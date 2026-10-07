@@ -5,19 +5,29 @@ import { AUTH_MESSAGES } from "@/constants/messages";
 export const INITIAL_REGISTER_FORM = {
     name: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
 };
 
 export const REGISTER_FIELDS = [
-    { id: "name", name: "name", label: "Full Name", type: "text" },
-    { id: "email", name: "email", label: "Email", type: "email" },
-    { id: "password", name: "password", label: "Password", type: "password" },
+    { id: "name", name: "name", label: "Full Name *", type: "text", required: true },
+    { id: "email", name: "email", label: "Email *", type: "email", required: true },
+    {
+        id: "phone",
+        name: "phone",
+        label: "Mobile Number *",
+        type: "tel",
+        placeholder: "e.g. 9876543210",
+        required: true,
+    },
+    { id: "password", name: "password", label: "Password *", type: "password", required: true },
     {
         id: "confirmPassword",
         name: "confirmPassword",
-        label: "Confirm Password",
+        label: "Confirm Password *",
         type: "password",
+        required: true,
     },
 ];
 
@@ -57,11 +67,17 @@ export const passwordSchema = z
     .regex(/[0-9]/, AUTH_MESSAGES.PASSWORD_NUMBER)
     .regex(/[^A-Za-z0-9]/, AUTH_MESSAGES.PASSWORD_SPECIAL);
 
+const phoneRegex = /^[+]?[0-9\s\-().]{7,20}$/;
+
 const baseRegisterSchema = z.object({
     name: z
         .string()
         .min(AUTH_LIMITS.NAME_MIN_LENGTH, AUTH_MESSAGES.NAME_REQUIRED),
     email: z.string().email(AUTH_MESSAGES.EMAIL_INVALID),
+    phone: z
+        .string()
+        .min(1, AUTH_MESSAGES.PHONE_REQUIRED)
+        .regex(phoneRegex, AUTH_MESSAGES.PHONE_INVALID),
     password: passwordSchema,
     confirmPassword: z.string(),
 });
@@ -114,6 +130,7 @@ export function mapRegisterErrors(fieldErrors) {
     return {
         name: fieldErrors.name?.[0] || "",
         email: fieldErrors.email?.[0] || "",
+        phone: fieldErrors.phone?.[0] || "",
         password: fieldErrors.password?.[0] || "",
         confirmPassword: fieldErrors.confirmPassword?.[0] || "",
     };

@@ -1,15 +1,14 @@
 package com.courseenrollment.auth.service;
 
-import com.courseenrollment.auth.dto.AuthResponse;
-import com.courseenrollment.auth.dto.LoginRequest;
-import com.courseenrollment.auth.dto.RegisterRequest;
-import com.courseenrollment.auth.dto.UserDto;
+import com.courseenrollment.auth.dto.*;
 import com.courseenrollment.auth.entity.RefreshToken;
 import com.courseenrollment.auth.entity.User;
 import com.courseenrollment.auth.enums.UserRole;
 import com.courseenrollment.auth.enums.UserStatus;
 import com.courseenrollment.auth.repository.UserRepository;
+import com.courseenrollment.common.exception.BadRequestException;
 import com.courseenrollment.common.exception.ConflictException;
+import com.courseenrollment.common.exception.ResourceNotFoundException;
 import com.courseenrollment.config.JwtService;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -58,7 +57,14 @@ public class AuthService {
         }
 
         String hashedPassword = passwordEncoder.encode(req.getPassword());
-        User user = new User(req.getEmail().trim(), req.getName().trim(), hashedPassword, role);
+        User user = new User(
+                req.getEmail().trim(),
+                req.getName().trim(),
+                hashedPassword,
+                role,
+                UserStatus.ACTIVE,
+                req.getPhone() != null ? req.getPhone().trim() : null
+        );
         User savedUser = userRepository.save(user);
 
         String token = jwtService.generateToken(
@@ -169,6 +175,72 @@ public class AuthService {
     public void logout(String refreshTokenStr) {
         if (refreshTokenService != null && refreshTokenStr != null) {
             refreshTokenService.revokeToken(refreshTokenStr);
+        }
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest req) {
+        User user = userRepository.findByEmail(req.getEmail().trim())
+                .orElseThrow(() -> new ResourceNotFoundException("No account found with this email address"));
+
+        if (user.getStatus() == UserStatus.DISABLED) {
+            throw new DisabledException("Account is disabled. Please contact the administrator.");
+        }
+
+        if (req.getPhone() != null && !req.getPhone().trim().isEmpty() && user.getPhone() != null) {
+            String inputDigits = req.getPhone().replaceAll("[^0-9]", "");
+            String userDigits = user.getPhone().replaceAll("[^0-9]", "");
+            if (!inputDigits.isEmpty() && !userDigits.isEmpty() && !inputDigits.equals(userDigits)) {
+                throw new BadRequestException("Mobile number does not match registered account details");
+            }
+        }
+
+        String hashedPassword = passwordEncoder.encode(req.getNewPassword());
+        user.setPassword(hashedPassword);
+        userRepository.save(user);
+
+        if (refreshTokenService != null) {
+            refreshTokenService.revokeAllUserTokens(user);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public UserDto getProfile(String email) {
+        User user = userRepository.findByEmail(email.trim())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return UserDto.fromEntity(user);
+    }
+
+    @Transactional
+    public UserDto updateProfile(String email, UpdateProfileRequest req) {
+        User user = userRepository.findByEmail(email.trim())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (req.getName() != null && !req.getName().trim().isEmpty()) {
+            user.setName(req.getName().trim());
+        }
+        if (req.getPhone() != null) {
+            user.setPhone(req.getPhone().trim());
+        }
+
+        User updated = userRepository.save(user);
+        return UserDto.fromEntity(updated);
+    }
+
+    @Transactional
+    public void changePassword(String email, ChangePasswordRequest req) {
+        User user = userRepository.findByEmail(email.trim())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Current password does not match");
+        }
+
+        user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        userRepository.save(user);
+
+        if (refreshTokenService != null) {
+            refreshTokenService.revokeAllUserTokens(user);
         }
     }
 }

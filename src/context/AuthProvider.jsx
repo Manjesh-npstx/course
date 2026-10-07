@@ -61,6 +61,10 @@ export function AuthProvider({ children }) {
         return data;
     }, []);
 
+    const updateUser = useCallback((updatedUser) => {
+        setUser((prev) => ({ ...prev, ...updatedUser }));
+    }, []);
+
     const switchRole = useCallback(async (targetRole) => {
         const data = await authService.switchRole(targetRole);
         setUser(data.user);
@@ -82,10 +86,11 @@ export function AuthProvider({ children }) {
             canEnroll: canEnroll(user),
             login,
             register,
+            updateUser,
             switchRole,
             logout,
         }),
-        [user, token, login, register, switchRole, logout]
+        [user, token, login, register, updateUser, switchRole, logout]
     );
 
     return (

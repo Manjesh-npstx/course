@@ -1,8 +1,6 @@
 package com.courseenrollment.auth.controller;
 
-import com.courseenrollment.auth.dto.AuthResponse;
-import com.courseenrollment.auth.dto.LoginRequest;
-import com.courseenrollment.auth.dto.RegisterRequest;
+import com.courseenrollment.auth.dto.*;
 import com.courseenrollment.auth.service.AuthService;
 import com.courseenrollment.common.exception.BadRequestException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -60,11 +59,48 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
+    @PostMapping("/reset-password")
+    @Operation(summary = "Reset account password with email and phone verification")
+    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        authService.resetPassword(req);
+        return ResponseEntity.ok(Map.of("message", "Password reset successfully. Please login with your new password."));
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Get current authenticated user profile")
+    public ResponseEntity<UserDto> getProfile(Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            throw new org.springframework.security.authentication.BadCredentialsException("Not authenticated");
+        }
+        UserDto profile = authService.getProfile(auth.getName());
+        return ResponseEntity.ok(profile);
+    }
+
+    @PutMapping("/me")
+    @Operation(summary = "Update current user profile information (name, phone)")
+    public ResponseEntity<UserDto> updateProfile(@Valid @RequestBody UpdateProfileRequest req, Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            throw new org.springframework.security.authentication.BadCredentialsException("Not authenticated");
+        }
+        UserDto profile = authService.updateProfile(auth.getName(), req);
+        return ResponseEntity.ok(profile);
+    }
+
+    @PostMapping("/change-password")
+    @Operation(summary = "Change password for logged in user")
+    public ResponseEntity<Map<String, String>> changePassword(@Valid @RequestBody ChangePasswordRequest req, Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            throw new org.springframework.security.authentication.BadCredentialsException("Not authenticated");
+        }
+        authService.changePassword(auth.getName(), req);
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+    }
+
     @PostMapping("/switch-role")
     @Operation(summary = "Switch the current authenticated user's role between admin and student")
     public ResponseEntity<AuthResponse> switchRole(
-            @RequestBody(required = false) java.util.Map<String, String> body,
-            org.springframework.security.core.Authentication auth
+            @RequestBody(required = false) Map<String, String> body,
+            Authentication auth
     ) {
         String role = body != null ? body.get("role") : null;
         String email = auth != null ? auth.getName() : null;

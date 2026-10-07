@@ -18,6 +18,11 @@ public class RegisterRequest {
     @Email(message = "email must be an email")
     private String email;
 
+    @Schema(example = "9876543210")
+    @NotBlank(message = "Mobile number is required")
+    @Pattern(regexp = "^[+]?[0-9\\s\\-().]{7,20}$", message = "Invalid mobile number format")
+    private String phone;
+
     @Schema(example = "Pass@1234", minLength = 8)
     @NotBlank(message = "password should not be empty")
     @Size(min = 8, message = "password must be at least 8 characters")
@@ -34,16 +39,19 @@ public class RegisterRequest {
     }
 
     public RegisterRequest(String name, String email, String password) {
-        this.name = name;
-        this.email = email;
-        this.password = password;
+        this(name, email, password, null, "9876543210");
     }
 
     public RegisterRequest(String name, String email, String password, String role) {
+        this(name, email, password, role, "9876543210");
+    }
+
+    public RegisterRequest(String name, String email, String password, String role, String phone) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.phone = phone;
     }
 
     public String getName() {
@@ -60,6 +68,14 @@ public class RegisterRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getPassword() {

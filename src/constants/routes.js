@@ -9,4 +9,6 @@ export const ROUTES = Object.freeze({
     STUDENTS: "/students",
     LOGIN: "/login",
     REGISTER: "/register",
+    RESET_PASSWORD: "/reset-password",
+    PROFILE: "/profile",
 });

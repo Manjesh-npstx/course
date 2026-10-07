@@ -20,4 +20,11 @@ export const NAV_ITEMS = Object.freeze([
         icon: "users",
         roles: [ROLES.ADMIN, ROLES.INSTRUCTOR],
     },
+    {
+        id: "profile",
+        label: "Profile",
+        path: ROUTES.PROFILE,
+        icon: "user",
+        roles: [ROLES.ADMIN, ROLES.INSTRUCTOR, ROLES.STUDENT],
+    },
 ]);

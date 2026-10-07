@@ -91,6 +91,10 @@ export function EnrollStudentModal({
         }
     }
 
+    const approvedCourses = courses.filter(
+        (c) => (c.status || "approved").toLowerCase() === "approved"
+    );
+
     return (
         <Modal isOpen={isOpen} onClose={handleClose} title="Enroll Student">
             <Alert>{error}</Alert>
@@ -101,7 +105,7 @@ export function EnrollStudentModal({
                             htmlFor="enroll-student-select"
                             className="input-label"
                         >
-                            Select Registered Student
+                            Select Registered Student <span className="required-asterisk" aria-hidden="true">*</span>
                         </label>
                         <select
                             id="enroll-student-select"
@@ -137,7 +141,7 @@ export function EnrollStudentModal({
                             htmlFor="enroll-course-select"
                             className="input-label"
                         >
-                            Select Course
+                            Select Course <span className="required-asterisk" aria-hidden="true">*</span>
                         </label>
                         <select
                             id="enroll-course-select"
@@ -148,7 +152,7 @@ export function EnrollStudentModal({
                             required
                         >
                             <option value="">Choose a course...</option>
-                            {courses.map((c) => (
+                            {approvedCourses.map((c) => (
                                 <option key={c.id} value={c.id}>
                                     {c.name} ({c.instructor})
                                 </option>

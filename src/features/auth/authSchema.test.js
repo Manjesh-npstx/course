@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { loginSchema, validateLoginField } from "./loginSchema";
 import { registerSchema, validateRegisterField } from "./registerSchema";
+import {
+    resetPasswordSchema,
+    validateResetPasswordField,
+} from "./resetPasswordSchema";
 
 describe("loginSchema", () => {
     it("passes validation with valid email and password", () => {
@@ -46,6 +50,7 @@ describe("registerSchema", () => {
         const result = registerSchema.safeParse({
             name: "John Doe",
             email: "john@campus.com",
+            phone: "9876543210",
             password: "SecurePass@123",
             confirmPassword: "SecurePass@123",
         });
@@ -56,6 +61,7 @@ describe("registerSchema", () => {
         const result = registerSchema.safeParse({
             name: "John Doe",
             email: "john@campus.com",
+            phone: "9876543210",
             password: "SecurePass@123",
             confirmPassword: "DifferentPass@456",
         });
@@ -67,10 +73,25 @@ describe("registerSchema", () => {
         }
     });
 
+    it("fails validation when phone is invalid", () => {
+        const result = registerSchema.safeParse({
+            name: "John Doe",
+            email: "john@campus.com",
+            phone: "123",
+            password: "SecurePass@123",
+            confirmPassword: "SecurePass@123",
+        });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            expect(result.error.flatten().fieldErrors.phone).toBeDefined();
+        }
+    });
+
     it("fails validation when name is shorter than 2 characters", () => {
         const result = registerSchema.safeParse({
             name: "J",
             email: "john@campus.com",
+            phone: "9876543210",
             password: "SecurePass@123",
             confirmPassword: "SecurePass@123",
         });
@@ -84,6 +105,7 @@ describe("registerSchema", () => {
         const result = registerSchema.safeParse({
             name: "John Doe",
             email: "john@campus.com",
+            phone: "9876543210",
             password: "Pass@1",
             confirmPassword: "Pass@1",
         });
@@ -97,6 +119,7 @@ describe("registerSchema", () => {
         const result = registerSchema.safeParse({
             name: "John Doe",
             email: "john@campus.com",
+            phone: "9876543210",
             password: "securepass@123",
             confirmPassword: "securepass@123",
         });
@@ -112,6 +135,7 @@ describe("registerSchema", () => {
         const result = registerSchema.safeParse({
             name: "John Doe",
             email: "john@campus.com",
+            phone: "9876543210",
             password: "SECUREPASS@123",
             confirmPassword: "SECUREPASS@123",
         });
@@ -127,6 +151,7 @@ describe("registerSchema", () => {
         const result = registerSchema.safeParse({
             name: "John Doe",
             email: "john@campus.com",
+            phone: "9876543210",
             password: "SecurePass@word",
             confirmPassword: "SecurePass@word",
         });
@@ -142,6 +167,7 @@ describe("registerSchema", () => {
         const result = registerSchema.safeParse({
             name: "John Doe",
             email: "john@campus.com",
+            phone: "9876543210",
             password: "SecurePassword123",
             confirmPassword: "SecurePassword123",
         });
@@ -158,6 +184,8 @@ describe("registerSchema", () => {
         expect(validateRegisterField("name", "Jane", {})).toBe("");
         expect(validateRegisterField("email", "bad-email", {})).not.toBe("");
         expect(validateRegisterField("email", "jane@campus.com", {})).toBe("");
+        expect(validateRegisterField("phone", "12", {})).not.toBe("");
+        expect(validateRegisterField("phone", "9876543210", {})).toBe("");
         expect(validateRegisterField("password", "short", {})).not.toBe("");
         expect(validateRegisterField("password", "SecurePass@123", {})).toBe(
             ""
@@ -172,5 +200,51 @@ describe("registerSchema", () => {
                 password: "SecurePass@123",
             })
         ).toBe("");
+    });
+});
+
+describe("resetPasswordSchema", () => {
+    it("passes validation with valid reset password details", () => {
+        const result = resetPasswordSchema.safeParse({
+            email: "student@campus.com",
+            phone: "9876543210",
+            newPassword: "SecurePass@123",
+            confirmPassword: "SecurePass@123",
+        });
+        expect(result.success).toBe(true);
+    });
+
+    it("fails validation when passwords do not match", () => {
+        const result = resetPasswordSchema.safeParse({
+            email: "student@campus.com",
+            phone: "9876543210",
+            newPassword: "SecurePass@123",
+            confirmPassword: "MismatchPass@456",
+        });
+        expect(result.success).toBe(false);
+    });
+
+    it("fails validation with invalid phone or email", () => {
+        const result = resetPasswordSchema.safeParse({
+            email: "not-an-email",
+            phone: "123",
+            newPassword: "SecurePass@123",
+            confirmPassword: "SecurePass@123",
+        });
+        expect(result.success).toBe(false);
+    });
+
+    it("validates reset password fields in real-time", () => {
+        expect(validateResetPasswordField("email", "invalid", {})).not.toBe("");
+        expect(validateResetPasswordField("email", "user@campus.com", {})).toBe("");
+        expect(validateResetPasswordField("phone", "12", {})).not.toBe("");
+        expect(validateResetPasswordField("phone", "9876543210", {})).toBe("");
+        expect(validateResetPasswordField("newPassword", "short", {})).not.toBe("");
+        expect(validateResetPasswordField("newPassword", "SecurePass@123", {})).toBe("");
+        expect(
+            validateResetPasswordField("confirmPassword", "mismatch", {
+                newPassword: "SecurePass@123",
+            })
+        ).not.toBe("");
     });
 });

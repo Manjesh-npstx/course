@@ -11,6 +11,12 @@
     margin-bottom: 6px;
 }
 
+.required-asterisk {
+    color: var(--danger);
+    font-weight: 600;
+    margin-left: 2px;
+}
+
 .input-wrapper {
     position: relative;
     width: 100%;

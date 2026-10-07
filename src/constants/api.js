@@ -10,6 +10,9 @@ export const API_CONFIG = Object.freeze({
 export const API_ENDPOINTS = Object.freeze({
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
+    RESET_PASSWORD: "/auth/reset-password",
+    ME: "/auth/me",
+    CHANGE_PASSWORD: "/auth/change-password",
     REFRESH: "/auth/refresh",
     LOGOUT: "/auth/logout",
     SWITCH_ROLE: "/auth/switch-role",

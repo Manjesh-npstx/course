@@ -69,7 +69,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/register",
+                                "/auth/refresh",
+                                "/auth/logout",
+                                "/auth/reset-password"
+                        ).permitAll()
+                        .requestMatchers("/auth/me", "/auth/change-password", "/auth/switch-role").authenticated()
                         .requestMatchers("/courses/my-courses", "/courses/enrolled").authenticated()
                         .requestMatchers(HttpMethod.GET, "/courses/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/students/**").permitAll()

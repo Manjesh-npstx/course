@@ -263,7 +263,7 @@ export function CourseDetailPage() {
 
             <div className="page-header">
                 <h2 className="section-title">Enrolled Students</h2>
-                {isAdmin && (
+                {isAdmin && isApproved && (
                     <Button
                         size="small"
                         disabled={isFull}

@@ -30,6 +30,9 @@ public class User {
     @Column(nullable = false)
     private UserStatus status = UserStatus.ACTIVE;
 
+    @Column
+    private String phone;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -55,19 +58,20 @@ public class User {
     }
 
     public User(String email, String name, String password, UserRole role) {
-        this.email = email;
-        this.name = name;
-        this.password = password;
-        this.role = role;
-        this.status = UserStatus.ACTIVE;
+        this(email, name, password, role, UserStatus.ACTIVE, null);
     }
 
     public User(String email, String name, String password, UserRole role, UserStatus status) {
+        this(email, name, password, role, status, null);
+    }
+
+    public User(String email, String name, String password, UserRole role, UserStatus status, String phone) {
         this.email = email;
         this.name = name;
         this.password = password;
         this.role = role;
         this.status = status != null ? status : UserStatus.ACTIVE;
+        this.phone = phone;
     }
 
     public Long getId() {
@@ -116,6 +120,14 @@ public class User {
 
     public void setStatus(UserStatus status) {
         this.status = status;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public Instant getCreatedAt() {

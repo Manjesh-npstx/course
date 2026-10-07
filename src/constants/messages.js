@@ -5,6 +5,8 @@
 export const AUTH_MESSAGES = Object.freeze({
     NAME_REQUIRED: "Name must be at least 2 characters",
     EMAIL_INVALID: "Please enter a valid email address",
+    PHONE_REQUIRED: "Mobile number is required",
+    PHONE_INVALID: "Please enter a valid mobile number (e.g. 9876543210 or +1 555-0100)",
     PASSWORD_MIN_LENGTH: "Password must be at least 8 characters",
     PASSWORD_UPPERCASE: "Password must contain at least one uppercase letter",
     PASSWORD_LOWERCASE: "Password must contain at least one lowercase letter",
@@ -15,6 +17,9 @@ export const AUTH_MESSAGES = Object.freeze({
     PASSWORDS_DO_NOT_MATCH: "Passwords do not match",
     GENERIC_LOGIN_ERROR: "Invalid username or password",
     REGISTRATION_SUCCESS: "Account created successfully. Please log in.",
+    RESET_PASSWORD_SUCCESS: "Password reset successfully. Please log in.",
+    PROFILE_UPDATE_SUCCESS: "Profile updated successfully.",
+    PASSWORD_CHANGE_SUCCESS: "Password changed successfully.",
     SESSION_EXPIRED: "Your session has expired. Please log in again.",
     UNAUTHORIZED: "You are not authorized to perform this action.",
 });
