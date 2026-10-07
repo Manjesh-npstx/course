@@ -231,4 +231,12 @@ public class StudentService {
     public List<Course> findEnrolledCoursesByEmail(String email) {
         return studentRepository.findEnrolledCoursesByEmail(email);
     }
+
+    @Transactional(readOnly = true)
+    public boolean isStudentEnrolled(String email, Long courseId) {
+        if (email == null || courseId == null) {
+            return false;
+        }
+        return studentRepository.existsByEmailIgnoreCaseAndCourseId(email.trim(), courseId);
+    }
 }

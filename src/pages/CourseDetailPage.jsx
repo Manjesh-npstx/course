@@ -29,6 +29,7 @@ export function CourseDetailPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [accessDenied, setAccessDenied] = useState(false);
 
     const [enrollOpen, setEnrollOpen] = useState(false);
     const [editStudent, setEditStudent] = useState(null);
@@ -69,10 +70,14 @@ export function CourseDetailPage() {
                     setStudents(res.data || []);
                     setTotalPages(res.meta?.totalPages || 1);
                     setTotal(res.meta?.total || 0);
+                    setAccessDenied(false);
                     setLoading(false);
                 }
-            } catch {
+            } catch (err) {
                 if (isMounted) {
+                    if (err?.response?.status === 403) {
+                        setAccessDenied(true);
+                    }
                     setLoading(false);
                 }
             }
@@ -181,7 +186,21 @@ export function CourseDetailPage() {
     const isPending = (course?.status || "").toLowerCase() === "pending";
     const isApproved = (course?.status || "").toLowerCase() === "approved";
     const isCurrentUserEnrolled =
-        isStudent && students.some((s) => s.email === user?.email);
+        isStudent &&
+        ((students &&
+            students.some(
+                (s) =>
+                    s.email &&
+                    user?.email &&
+                    s.email.toLowerCase() === user.email.toLowerCase()
+            )) ||
+            (course?.students &&
+                course.students.some(
+                    (s) =>
+                        s.email &&
+                        user?.email &&
+                        s.email.toLowerCase() === user.email.toLowerCase()
+                )));
 
     return (
         <div className="page">
@@ -296,6 +315,12 @@ export function CourseDetailPage() {
             <div className="section-card">
                 {loading ? (
                     <div className="table-loading">Loading students...</div>
+                ) : accessDenied ? (
+                    <div className="table-loading">
+                        {isStudent
+                            ? "Enroll in this course to view enrolled classmates."
+                            : "Only the assigned instructor and enrolled students can view the student list."}
+                    </div>
                 ) : students.length === 0 ? (
                     <div className="table-loading">
                         No students enrolled yet
