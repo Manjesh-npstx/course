@@ -102,21 +102,6 @@ export const authService = {
         return this.resetUserPassword(passwordData);
     },
 
-    async switchRole(role) {
-        const payload = role ? { role } : {};
-        const data = await api.post(API_ENDPOINTS.SWITCH_ROLE, payload);
-        if (data.token) {
-            tokenStorage.setToken(data.token);
-        }
-        if (data.refreshToken) {
-            tokenStorage.setRefreshToken(data.refreshToken);
-        }
-        if (data.user) {
-            tokenStorage.setUser(data.user);
-        }
-        return data;
-    },
-
     async refreshToken() {
         const currentRefreshToken = tokenStorage.getRefreshToken();
         if (!currentRefreshToken) {

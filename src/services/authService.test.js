@@ -66,24 +66,6 @@ describe("authService", () => {
         expect(tokenStorage.getUser()).toEqual(mockUser);
     });
 
-    it("switchRole updates stored session with new token and user", async () => {
-        const adminUser = {
-            id: 1,
-            name: "Alice",
-            email: "alice@campus.com",
-            role: "admin",
-        };
-        vi.spyOn(api, "post").mockResolvedValue({
-            user: adminUser,
-            token: "jwt-admin-token",
-        });
-
-        await authService.switchRole("admin");
-
-        expect(tokenStorage.getToken()).toBe("jwt-admin-token");
-        expect(tokenStorage.getUser()?.role).toBe("admin");
-    });
-
     it("login successfully saves token, refreshToken, and user to tokenStorage", async () => {
         const mockUser = {
             id: 1,

@@ -15,7 +15,6 @@ export const API_ENDPOINTS = Object.freeze({
     CHANGE_PASSWORD: "/auth/change-password",
     REFRESH: "/auth/refresh",
     LOGOUT: "/auth/logout",
-    SWITCH_ROLE: "/auth/switch-role",
     COURSES: "/courses",
     MY_COURSES: "/courses/my-courses",
     ENROLL: (id) => `/courses/${id}/enroll`,

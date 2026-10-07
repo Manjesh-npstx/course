@@ -65,13 +65,6 @@ export function AuthProvider({ children }) {
         setUser((prev) => ({ ...prev, ...updatedUser }));
     }, []);
 
-    const switchRole = useCallback(async (targetRole) => {
-        const data = await authService.switchRole(targetRole);
-        setUser(data.user);
-        setToken(data.token);
-        return data;
-    }, []);
-
     const value = useMemo(
         () => ({
             user,
@@ -87,10 +80,9 @@ export function AuthProvider({ children }) {
             login,
             register,
             updateUser,
-            switchRole,
             logout,
         }),
-        [user, token, login, register, updateUser, switchRole, logout]
+        [user, token, login, register, updateUser, logout]
     );
 
     return (
