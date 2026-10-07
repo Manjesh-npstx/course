@@ -217,23 +217,12 @@ export function CourseDetailPage() {
                                 <Badge variant="success">Approved</Badge>
                             )}
                             {isInstructor &&
-                                ((course?.instructorEmail &&
+                                Boolean(
+                                    course?.instructorEmail &&
                                     user?.email &&
                                     course.instructorEmail.toLowerCase() ===
-                                        user.email.toLowerCase()) ||
-                                    (user?.email &&
-                                        [
-                                            "instructor@campus.com",
-                                            "instructor1@campus.com",
-                                        ].includes(user.email.toLowerCase()) &&
-                                        [
-                                            "instructor@campus.com",
-                                            "instructor1@campus.com",
-                                        ].includes(
-                                            (
-                                                course?.instructorEmail || ""
-                                            ).toLowerCase()
-                                        ))) && (
+                                        user.email.toLowerCase()
+                                ) && (
                                     <Badge variant="primary">Your Course</Badge>
                                 )}
                         </div>

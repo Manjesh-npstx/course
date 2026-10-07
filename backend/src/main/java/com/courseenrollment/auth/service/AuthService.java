@@ -233,22 +233,9 @@ public class AuthService {
 
         User updated = userRepository.save(user);
 
-        // Keep alias accounts in sync (e.g. instructor@campus.com and instructor1@campus.com)
-        if (java.util.List.of("instructor@campus.com", "instructor1@campus.com").contains(email.trim().toLowerCase())) {
-            for (String aliasEmail : java.util.List.of("instructor@campus.com", "instructor1@campus.com")) {
-                if (!aliasEmail.equalsIgnoreCase(email.trim())) {
-                    userRepository.findByEmail(aliasEmail).ifPresent(aliasUser -> {
-                        aliasUser.setName(updated.getName());
-                        aliasUser.setPhone(updated.getPhone());
-                        userRepository.save(aliasUser);
-                    });
-                }
-            }
-        }
-
-        // Synchronize course instructor name so that courses reflect the instructor's updated name
+        // Synchronize course instructor display name for courses created by this instructor
         if (courseRepository != null && req.getName() != null && !req.getName().trim().isEmpty()) {
-            courseRepository.updateInstructorName(email.trim(), oldName, req.getName().trim());
+            courseRepository.updateInstructorName(email.trim(), req.getName().trim());
         }
 
         return UserDto.fromEntity(updated);

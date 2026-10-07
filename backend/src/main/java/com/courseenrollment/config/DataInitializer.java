@@ -63,13 +63,6 @@ public class DataInitializer implements ApplicationRunner {
             log.info("Seeded instructor 2: instructor2@campus.com / Instructor@1234 (phone: 9876543213)");
         }
 
-        if (!userRepository.existsByEmail("instructor@campus.com")) {
-            String hashed = passwordEncoder.encode("Instructor@1234");
-            User instructorLegacy = new User("instructor@campus.com", "Dr. Jane Instructor", hashed, UserRole.INSTRUCTOR, UserStatus.ACTIVE, "9876543211");
-            userRepository.save(instructorLegacy);
-            log.info("Seeded legacy instructor alias: instructor@campus.com / Instructor@1234");
-        }
-
         User student = null;
         if (!userRepository.existsByEmail("student@campus.com")) {
             String hashed = passwordEncoder.encode("Student@1234");

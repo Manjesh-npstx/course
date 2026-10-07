@@ -61,9 +61,7 @@ public class StudentController {
         if (isInstructorOnly(auth)) {
             String instructorEmail = auth.getName();
             boolean isOwner = student.getCourse() != null && student.getCourse().getInstructorEmail() != null &&
-                    (student.getCourse().getInstructorEmail().equalsIgnoreCase(instructorEmail) ||
-                     (java.util.List.of("instructor@campus.com", "instructor1@campus.com").contains(instructorEmail.toLowerCase()) &&
-                      java.util.List.of("instructor@campus.com", "instructor1@campus.com").contains(student.getCourse().getInstructorEmail().toLowerCase())));
+                    student.getCourse().getInstructorEmail().equalsIgnoreCase(instructorEmail);
             if (!isOwner) {
                 throw new org.springframework.security.access.AccessDeniedException("Instructors can only view students enrolled in their own courses.");
             }

@@ -159,9 +159,7 @@ public class CourseController {
         if (role == UserRole.INSTRUCTOR) {
             Course existing = courseService.findOne(id);
             boolean isOwner = existing.getInstructorEmail() != null &&
-                    (existing.getInstructorEmail().equalsIgnoreCase(email) ||
-                     (java.util.List.of("instructor@campus.com", "instructor1@campus.com").contains(email.toLowerCase()) &&
-                      java.util.List.of("instructor@campus.com", "instructor1@campus.com").contains(existing.getInstructorEmail().toLowerCase())));
+                    existing.getInstructorEmail().equalsIgnoreCase(email);
             if (!isOwner) {
                 throw new AccessDeniedException("Instructors can only update their own courses");
             }
@@ -199,9 +197,7 @@ public class CourseController {
 
         if (role == UserRole.INSTRUCTOR) {
             boolean isOwner = currentUserEmail != null && course.getInstructorEmail() != null &&
-                    (course.getInstructorEmail().equalsIgnoreCase(currentUserEmail) ||
-                     (java.util.List.of("instructor@campus.com", "instructor1@campus.com").contains(currentUserEmail.toLowerCase()) &&
-                      java.util.List.of("instructor@campus.com", "instructor1@campus.com").contains(course.getInstructorEmail().toLowerCase())));
+                    course.getInstructorEmail().equalsIgnoreCase(currentUserEmail);
             if (!isOwner) {
                 throw new AccessDeniedException("Instructors can only view students enrolled in their own courses.");
             }
