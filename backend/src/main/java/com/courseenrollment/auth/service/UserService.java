@@ -50,13 +50,12 @@ public class UserService {
                 .map(user -> {
                     UserDto dto = UserDto.fromEntity(user);
                     if (user.getRole() == UserRole.STUDENT && studentRepository != null) {
-                        List<String> courseNames = studentRepository.findEnrolledCoursesByEmail(user.getEmail())
-                                .stream()
-                                .map(Course::getName)
-                                .collect(Collectors.toList());
-                        dto.setEnrolledCourses(courseNames);
+                        List<Course> enrolledList = studentRepository.findEnrolledCoursesByEmail(user.getEmail());
+                        dto.setEnrolledCourses(enrolledList.stream().map(Course::getName).collect(Collectors.toList()));
+                        dto.setEnrolledCourseIds(enrolledList.stream().map(Course::getId).collect(Collectors.toList()));
                     } else {
                         dto.setEnrolledCourses(Collections.emptyList());
+                        dto.setEnrolledCourseIds(Collections.emptyList());
                     }
                     return dto;
                 })
@@ -72,7 +71,18 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserDto> findActiveStudents() {
         return userRepository.findByRoleAndStatus(UserRole.STUDENT, UserStatus.ACTIVE).stream()
-                .map(UserDto::fromEntity)
+                .map(user -> {
+                    UserDto dto = UserDto.fromEntity(user);
+                    if (studentRepository != null) {
+                        List<Course> enrolledList = studentRepository.findEnrolledCoursesByEmail(user.getEmail());
+                        dto.setEnrolledCourses(enrolledList.stream().map(Course::getName).collect(Collectors.toList()));
+                        dto.setEnrolledCourseIds(enrolledList.stream().map(Course::getId).collect(Collectors.toList()));
+                    } else {
+                        dto.setEnrolledCourses(Collections.emptyList());
+                        dto.setEnrolledCourseIds(Collections.emptyList());
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

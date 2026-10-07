@@ -337,6 +337,7 @@ export function CourseDetailPage() {
                 isOpen={enrollOpen}
                 onClose={() => setEnrollOpen(false)}
                 onSubmit={handleEnrollAdmin}
+                courses={course ? [course] : []}
                 preselectedCourseId={courseId}
             />
 

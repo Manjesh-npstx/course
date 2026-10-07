@@ -35,13 +35,16 @@ public class AuthService {
         if (user == null) return null;
         UserDto dto = UserDto.fromEntity(user);
         if (user.getRole() == UserRole.STUDENT && studentRepository != null) {
-            java.util.List<String> courses = studentRepository.findEnrolledCoursesByEmail(user.getEmail())
-                    .stream()
+            java.util.List<com.courseenrollment.course.entity.Course> courses = studentRepository.findEnrolledCoursesByEmail(user.getEmail());
+            dto.setEnrolledCourses(courses.stream()
                     .map(com.courseenrollment.course.entity.Course::getName)
-                    .collect(java.util.stream.Collectors.toList());
-            dto.setEnrolledCourses(courses);
+                    .collect(java.util.stream.Collectors.toList()));
+            dto.setEnrolledCourseIds(courses.stream()
+                    .map(com.courseenrollment.course.entity.Course::getId)
+                    .collect(java.util.stream.Collectors.toList()));
         } else {
             dto.setEnrolledCourses(java.util.Collections.emptyList());
+            dto.setEnrolledCourseIds(java.util.Collections.emptyList());
         }
         return dto;
     }

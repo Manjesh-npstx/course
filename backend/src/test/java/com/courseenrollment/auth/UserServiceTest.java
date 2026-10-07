@@ -79,6 +79,8 @@ class UserServiceTest {
     void findActiveStudents_success() {
         when(userRepository.findByRoleAndStatus(UserRole.STUDENT, UserStatus.ACTIVE))
                 .thenReturn(List.of(studentUser));
+        when(studentRepository.findEnrolledCoursesByEmail("student@test.com"))
+                .thenReturn(List.of());
 
         List<UserDto> result = userService.findActiveStudents();
 

@@ -92,11 +92,21 @@ public class UserDto {
         this.status = status;
     }
 
+    private java.util.List<Long> enrolledCourseIds = java.util.Collections.emptyList();
+
     public java.util.List<String> getEnrolledCourses() {
         return enrolledCourses;
     }
 
     public void setEnrolledCourses(java.util.List<String> enrolledCourses) {
-        this.enrolledCourses = enrolledCourses;
+        this.enrolledCourses = enrolledCourses != null ? enrolledCourses : java.util.Collections.emptyList();
+    }
+
+    public java.util.List<Long> getEnrolledCourseIds() {
+        return enrolledCourseIds;
+    }
+
+    public void setEnrolledCourseIds(java.util.List<Long> enrolledCourseIds) {
+        this.enrolledCourseIds = enrolledCourseIds != null ? enrolledCourseIds : java.util.Collections.emptyList();
     }
 }

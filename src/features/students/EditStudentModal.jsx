@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Alert from "@/components/common/Alert";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import Modal from "@/components/common/Modal";
+import { userService } from "@/services/userService";
 
 /**
  * Modal dialog for updating an enrolled student.
@@ -20,8 +21,42 @@ export function EditStudentModal({
     const [courseId, setCourseId] = useState(
         String(student?.course?.id || student?.courseId || "")
     );
+    const [enrolledCourseIds, setEnrolledCourseIds] = useState([]);
+    const [enrolledCourseNames, setEnrolledCourseNames] = useState([]);
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const currentCourseId = Number(student?.course?.id || student?.courseId);
+
+    useEffect(() => {
+        let isMounted = true;
+        if (isOpen && student?.email) {
+            userService
+                .getActiveStudents()
+                .then((studentsList) => {
+                    if (!isMounted) return;
+                    const found = (studentsList || []).find(
+                        (s) =>
+                            s.email?.toLowerCase() ===
+                            student.email.trim().toLowerCase()
+                    );
+                    if (found) {
+                        setEnrolledCourseIds(
+                            (found.enrolledCourseIds || []).map(Number)
+                        );
+                        setEnrolledCourseNames(
+                            (found.enrolledCourses || []).map((n) =>
+                                String(n).trim().toLowerCase()
+                            )
+                        );
+                    }
+                })
+                .catch(() => {});
+        }
+        return () => {
+            isMounted = false;
+        };
+    }, [isOpen, student?.email]);
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -74,30 +109,52 @@ export function EditStudentModal({
                     disabled={isSubmitting}
                     required
                 />
-                {courses.length > 0 && (
-                    <div className="input-group">
-                        <label
-                            htmlFor="edit-course-select"
-                            className="input-label"
-                        >
-                            Change Course
-                        </label>
-                        <select
-                            id="edit-course-select"
-                            className="input-field"
-                            value={courseId}
-                            onChange={(e) => setCourseId(e.target.value)}
-                            disabled={isSubmitting}
-                        >
-                            <option value="">Keep current course</option>
-                            {courses.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                    {c.name} ({c.instructor})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                )}
+                {courses.length > 0 && (() => {
+                    const selectableCourses = courses.filter((c) => {
+                        const cId = Number(c.id);
+                        if (
+                            cId !== currentCourseId &&
+                            enrolledCourseIds.includes(cId)
+                        ) {
+                            return false;
+                        }
+                        if (
+                            cId !== currentCourseId &&
+                            c.name &&
+                            enrolledCourseNames.includes(
+                                String(c.name).trim().toLowerCase()
+                            )
+                        ) {
+                            return false;
+                        }
+                        return true;
+                    });
+
+                    return (
+                        <div className="input-group">
+                            <label
+                                htmlFor="edit-course-select"
+                                className="input-label"
+                            >
+                                Change Course
+                            </label>
+                            <select
+                                id="edit-course-select"
+                                className="input-field"
+                                value={courseId}
+                                onChange={(e) => setCourseId(e.target.value)}
+                                disabled={isSubmitting}
+                            >
+                                <option value="">Keep current course</option>
+                                {selectableCourses.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.name} ({c.instructor})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    );
+                })()}
                 <div className="modal-actions">
                     <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? "Saving..." : "Save Changes"}
