@@ -30,3 +30,7 @@ target/
 *.jar
 *.class
 *.sqlite
+
+# Postman Guide & Collections
+POSTMAN_GUIDE.md
+*postman*
