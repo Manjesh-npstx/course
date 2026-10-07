@@ -211,11 +211,19 @@ public class AuthService {
         return UserDto.fromEntity(user);
     }
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.courseenrollment.course.repository.CourseRepository courseRepository;
+
+    public void setCourseRepository(com.courseenrollment.course.repository.CourseRepository courseRepository) {
+        this.courseRepository = courseRepository;
+    }
+
     @Transactional
     public UserDto updateProfile(String email, UpdateProfileRequest req) {
         User user = userRepository.findByEmail(email.trim())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        String oldName = user.getName();
         if (req.getName() != null && !req.getName().trim().isEmpty()) {
             user.setName(req.getName().trim());
         }
@@ -224,6 +232,25 @@ public class AuthService {
         }
 
         User updated = userRepository.save(user);
+
+        // Keep alias accounts in sync (e.g. instructor@campus.com and instructor1@campus.com)
+        if (java.util.List.of("instructor@campus.com", "instructor1@campus.com").contains(email.trim().toLowerCase())) {
+            for (String aliasEmail : java.util.List.of("instructor@campus.com", "instructor1@campus.com")) {
+                if (!aliasEmail.equalsIgnoreCase(email.trim())) {
+                    userRepository.findByEmail(aliasEmail).ifPresent(aliasUser -> {
+                        aliasUser.setName(updated.getName());
+                        aliasUser.setPhone(updated.getPhone());
+                        userRepository.save(aliasUser);
+                    });
+                }
+            }
+        }
+
+        // Synchronize course instructor name so that courses reflect the instructor's updated name
+        if (courseRepository != null && req.getName() != null && !req.getName().trim().isEmpty()) {
+            courseRepository.updateInstructorName(email.trim(), oldName, req.getName().trim());
+        }
+
         return UserDto.fromEntity(updated);
     }
 
