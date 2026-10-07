@@ -7,12 +7,13 @@ import Input from "@/components/common/Input";
 import { AUTH_MESSAGES } from "@/constants/messages";
 import { ROUTES } from "@/constants/routes";
 import PasswordRequirements from "@/features/auth/PasswordRequirements";
-import { passwordSchema } from "@/features/auth/registerSchema";
+import {
+    isValidPhoneNumber,
+    passwordSchema,
+} from "@/features/auth/registerSchema";
 import { useAuth } from "@/hooks/useAuth";
 import { authService } from "@/services/authService";
 import "./ProfilePage.css";
-
-const phoneRegex = /^[+]?[0-9\s\-().]{7,20}$/;
 
 /**
  * User Profile and Reset Password page.
@@ -130,7 +131,7 @@ function ProfilePage() {
                     ...prev,
                     phone: AUTH_MESSAGES.PHONE_REQUIRED,
                 }));
-            } else if (!phoneRegex.test(value.trim())) {
+            } else if (!isValidPhoneNumber(value.trim())) {
                 setEditErrors((prev) => ({
                     ...prev,
                     phone: AUTH_MESSAGES.PHONE_INVALID,
@@ -148,7 +149,7 @@ function ProfilePage() {
 
         const nameValid = editForm.name && editForm.name.trim().length >= 2;
         const phoneValid =
-            editForm.phone && phoneRegex.test(editForm.phone.trim());
+            editForm.phone && isValidPhoneNumber(editForm.phone.trim());
 
         if (!nameValid || !phoneValid) {
             setEditErrors({

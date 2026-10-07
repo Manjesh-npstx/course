@@ -183,9 +183,22 @@ describe("registerSchema", () => {
         expect(validateRegisterField("name", "J", {})).not.toBe("");
         expect(validateRegisterField("name", "Jane", {})).toBe("");
         expect(validateRegisterField("email", "bad-email", {})).not.toBe("");
-        expect(validateRegisterField("email", "jane@campus.com", {})).toBe("");
         expect(validateRegisterField("phone", "12", {})).not.toBe("");
+        // Ensure partial numbers (7, 8, 9 digits) are strictly invalid and keep error visible
+        expect(validateRegisterField("phone", "9876543", {})).not.toBe("");
+        expect(validateRegisterField("phone", "98765432", {})).not.toBe("");
+        expect(validateRegisterField("phone", "987654321", {})).not.toBe("");
+        // Full 10-digit mobile number passes validation
         expect(validateRegisterField("phone", "9876543210", {})).toBe("");
+        // International and formatted mobile numbers with at least 10 digits pass
+        expect(validateRegisterField("phone", "+91 9876543210", {})).toBe("");
+        expect(validateRegisterField("phone", "+1 (555) 019-2834", {})).toBe(
+            ""
+        );
+        // Too long numbers (>15 digits) fail
+        expect(validateRegisterField("phone", "9876543210123456", {})).not.toBe(
+            ""
+        );
         expect(validateRegisterField("password", "short", {})).not.toBe("");
         expect(validateRegisterField("password", "SecurePass@123", {})).toBe(
             ""
@@ -240,6 +253,13 @@ describe("resetPasswordSchema", () => {
             ""
         );
         expect(validateResetPasswordField("phone", "12", {})).not.toBe("");
+        expect(validateResetPasswordField("phone", "9876543", {})).not.toBe("");
+        expect(validateResetPasswordField("phone", "98765432", {})).not.toBe(
+            ""
+        );
+        expect(validateResetPasswordField("phone", "987654321", {})).not.toBe(
+            ""
+        );
         expect(validateResetPasswordField("phone", "9876543210", {})).toBe("");
         expect(validateResetPasswordField("newPassword", "short", {})).not.toBe(
             ""

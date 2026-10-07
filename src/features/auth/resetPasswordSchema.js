@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AUTH_MESSAGES } from "@/constants/messages";
-import { passwordSchema } from "./registerSchema";
+import { isValidPhoneNumber, passwordSchema } from "./registerSchema";
 
 export const INITIAL_RESET_PASSWORD_FORM = {
     email: "",
@@ -42,14 +42,14 @@ export const RESET_PASSWORD_FIELDS = [
     },
 ];
 
-const phoneRegex = /^[+]?[0-9\s\-().]{7,20}$/;
-
 const baseResetPasswordSchema = z.object({
     email: z.string().email(AUTH_MESSAGES.EMAIL_INVALID),
     phone: z
         .string()
         .min(1, AUTH_MESSAGES.PHONE_REQUIRED)
-        .regex(phoneRegex, AUTH_MESSAGES.PHONE_INVALID),
+        .refine(isValidPhoneNumber, {
+            message: AUTH_MESSAGES.PHONE_INVALID,
+        }),
     newPassword: passwordSchema,
     confirmPassword: z.string(),
 });

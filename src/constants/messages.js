@@ -7,7 +7,7 @@ export const AUTH_MESSAGES = Object.freeze({
     EMAIL_INVALID: "Please enter a valid email address",
     PHONE_REQUIRED: "Mobile number is required",
     PHONE_INVALID:
-        "Please enter a valid mobile number (e.g. 9876543210 or +1 555-0100)",
+        "Please enter a valid 10-digit mobile number (e.g. 9876543210 or +91 9876543210)",
     PASSWORD_MIN_LENGTH: "Password must be at least 8 characters",
     PASSWORD_UPPERCASE: "Password must contain at least one uppercase letter",
     PASSWORD_LOWERCASE: "Password must contain at least one lowercase letter",

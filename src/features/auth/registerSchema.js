@@ -85,7 +85,25 @@ export const passwordSchema = z
     .regex(/[0-9]/, AUTH_MESSAGES.PASSWORD_NUMBER)
     .regex(/[^A-Za-z0-9]/, AUTH_MESSAGES.PASSWORD_SPECIAL);
 
-const phoneRegex = /^[+]?[0-9\s\-().]{7,20}$/;
+/**
+ * Validates that a mobile number contains only allowed phone characters
+ * and has between 10 and 15 actual digits (standard mobile number format).
+ *
+ * @param {string} value - Phone number string.
+ * @returns {boolean} True if valid mobile number.
+ */
+export function isValidPhoneNumber(value) {
+    if (!value || typeof value !== "string") return false;
+    const trimmed = value.trim();
+    if (!/^[+]?[0-9\s\-().]{10,20}$/.test(trimmed)) {
+        return false;
+    }
+    const digits = trimmed.replace(/\D/g, "");
+    return (
+        digits.length >= AUTH_LIMITS.PHONE_MIN_DIGITS &&
+        digits.length <= AUTH_LIMITS.PHONE_MAX_DIGITS
+    );
+}
 
 const baseRegisterSchema = z.object({
     name: z
@@ -95,7 +113,9 @@ const baseRegisterSchema = z.object({
     phone: z
         .string()
         .min(1, AUTH_MESSAGES.PHONE_REQUIRED)
-        .regex(phoneRegex, AUTH_MESSAGES.PHONE_INVALID),
+        .refine(isValidPhoneNumber, {
+            message: AUTH_MESSAGES.PHONE_INVALID,
+        }),
     password: passwordSchema,
     confirmPassword: z.string(),
 });

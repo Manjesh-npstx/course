@@ -20,7 +20,7 @@ public class RegisterRequest {
 
     @Schema(example = "9876543210")
     @NotBlank(message = "Mobile number is required")
-    @Pattern(regexp = "^[+]?[0-9\\s\\-().]{7,20}$", message = "Invalid mobile number format")
+    @Pattern(regexp = "^[+]?[0-9\\s\\-().]{10,20}$", message = "Mobile number must be at least 10 digits")
     private String phone;
 
     @Schema(example = "Pass@1234", minLength = 8)
