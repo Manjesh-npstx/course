@@ -10,7 +10,6 @@ import CoursesPage from "@/pages/CoursesPage";
 import LoginPage from "@/pages/LoginPage";
 import ProfilePage from "@/pages/ProfilePage";
 import RegisterPage from "@/pages/RegisterPage";
-import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import StudentsPage from "@/pages/StudentsPage";
 
 /**
@@ -40,15 +39,6 @@ function App() {
                             </PageLayout>
                         }
                     />
-                    <Route
-                        path={ROUTES.RESET_PASSWORD}
-                        element={
-                            <PageLayout>
-                                <ResetPasswordPage />
-                            </PageLayout>
-                        }
-                    />
-
                     {/* Authenticated Dashboard Routes in AppLayout */}
                     <Route
                         element={
@@ -81,6 +71,15 @@ function App() {
                         <Route
                             path={ROUTES.PROFILE}
                             element={<ProfilePage />}
+                        />
+                        <Route
+                            path={ROUTES.RESET_PASSWORD}
+                            element={
+                                <Navigate
+                                    to={`${ROUTES.PROFILE}?tab=reset-password`}
+                                    replace
+                                />
+                            }
                         />
                         <Route
                             path={ROUTES.HOME}
