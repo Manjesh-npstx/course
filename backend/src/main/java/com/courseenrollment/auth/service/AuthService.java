@@ -4,12 +4,13 @@ import com.courseenrollment.auth.dto.AuthResponse;
 import com.courseenrollment.auth.dto.LoginRequest;
 import com.courseenrollment.auth.dto.RegisterRequest;
 import com.courseenrollment.auth.dto.UserDto;
+import com.courseenrollment.auth.entity.RefreshToken;
 import com.courseenrollment.auth.entity.User;
 import com.courseenrollment.auth.enums.UserRole;
+import com.courseenrollment.auth.enums.UserStatus;
 import com.courseenrollment.auth.repository.UserRepository;
 import com.courseenrollment.common.exception.ConflictException;
 import com.courseenrollment.config.JwtService;
-import com.courseenrollment.auth.enums.UserStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,13 +23,23 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public AuthService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtService jwtService,
+                       RefreshTokenService refreshTokenService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
+    }
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        JwtService jwtService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
+        this(userRepository, passwordEncoder, jwtService, null);
     }
 
     @Transactional
@@ -56,7 +67,13 @@ public class AuthService {
                 savedUser.getRole().getValue()
         );
 
-        return new AuthResponse(UserDto.fromEntity(savedUser), token);
+        String refreshTokenStr = null;
+        if (refreshTokenService != null) {
+            RefreshToken rt = refreshTokenService.createRefreshToken(savedUser);
+            refreshTokenStr = rt.getToken();
+        }
+
+        return new AuthResponse(UserDto.fromEntity(savedUser), token, refreshTokenStr);
     }
 
     @Transactional
@@ -86,10 +103,16 @@ public class AuthService {
                 savedUser.getRole().getValue()
         );
 
-        return new AuthResponse(UserDto.fromEntity(savedUser), token);
+        String refreshTokenStr = null;
+        if (refreshTokenService != null) {
+            RefreshToken rt = refreshTokenService.createRefreshToken(savedUser);
+            refreshTokenStr = rt.getToken();
+        }
+
+        return new AuthResponse(UserDto.fromEntity(savedUser), token, refreshTokenStr);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest req) {
         User user = userRepository.findByEmail(req.getEmail().trim())
                 .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
@@ -108,6 +131,44 @@ public class AuthService {
                 user.getRole().getValue()
         );
 
-        return new AuthResponse(UserDto.fromEntity(user), token);
+        String refreshTokenStr = null;
+        if (refreshTokenService != null) {
+            RefreshToken rt = refreshTokenService.createRefreshToken(user);
+            refreshTokenStr = rt.getToken();
+        }
+
+        return new AuthResponse(UserDto.fromEntity(user), token, refreshTokenStr);
+    }
+
+    @Transactional
+    public AuthResponse refreshToken(String refreshTokenStr) {
+        if (refreshTokenService == null) {
+            throw new BadCredentialsException("Refresh tokens not supported");
+        }
+        RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenStr);
+        refreshTokenService.verifyExpiration(refreshToken);
+
+        User user = refreshToken.getUser();
+        if (user.getStatus() == UserStatus.DISABLED) {
+            refreshTokenService.revokeAllUserTokens(user);
+            throw new DisabledException("Account is disabled. Please contact the administrator.");
+        }
+
+        String newAccessToken = jwtService.generateToken(
+                user.getId(),
+                user.getEmail(),
+                user.getRole().getValue()
+        );
+
+        RefreshToken rotatedToken = refreshTokenService.rotateRefreshToken(refreshToken);
+
+        return new AuthResponse(UserDto.fromEntity(user), newAccessToken, rotatedToken.getToken());
+    }
+
+    @Transactional
+    public void logout(String refreshTokenStr) {
+        if (refreshTokenService != null && refreshTokenStr != null) {
+            refreshTokenService.revokeToken(refreshTokenStr);
+        }
     }
 }

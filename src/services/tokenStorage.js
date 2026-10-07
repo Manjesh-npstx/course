@@ -12,6 +12,14 @@ export const tokenStorage = {
             localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
         }
     },
+    getRefreshToken() {
+        return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    },
+    setRefreshToken(token) {
+        if (token) {
+            localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, token);
+        }
+    },
     getUser() {
         const raw = localStorage.getItem(STORAGE_KEYS.USER_DATA);
         try {
@@ -27,6 +35,7 @@ export const tokenStorage = {
     },
     clear() {
         localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER_DATA);
         localStorage.removeItem("auth_token");
         localStorage.removeItem("auth_user");

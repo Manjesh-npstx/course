@@ -1,10 +1,11 @@
-import { API_ENDPOINTS } from "@/constants/api";
+import axios from "axios";
+import { API_CONFIG, API_ENDPOINTS } from "@/constants/api";
 import { AUTH_MESSAGES } from "@/constants/messages";
 import api from "@/services/api";
 import { tokenStorage } from "@/services/tokenStorage";
 
 /**
- * Authentication service handling login, registration, and role switching.
+ * Authentication service handling login, registration, token refresh, and logout.
  */
 export const authService = {
     async login(credentials) {
@@ -12,6 +13,9 @@ export const authService = {
             const data = await api.post(API_ENDPOINTS.LOGIN, credentials);
             if (data.token) {
                 tokenStorage.setToken(data.token);
+            }
+            if (data.refreshToken) {
+                tokenStorage.setRefreshToken(data.refreshToken);
             }
             if (data.user) {
                 tokenStorage.setUser(data.user);
@@ -38,6 +42,9 @@ export const authService = {
             if (data.token) {
                 tokenStorage.setToken(data.token);
             }
+            if (data.refreshToken) {
+                tokenStorage.setRefreshToken(data.refreshToken);
+            }
             if (data.user) {
                 tokenStorage.setUser(data.user);
             }
@@ -55,13 +62,51 @@ export const authService = {
         if (data.token) {
             tokenStorage.setToken(data.token);
         }
+        if (data.refreshToken) {
+            tokenStorage.setRefreshToken(data.refreshToken);
+        }
         if (data.user) {
             tokenStorage.setUser(data.user);
         }
         return data;
     },
 
-    logout() {
+    async refreshToken() {
+        const currentRefreshToken = tokenStorage.getRefreshToken();
+        if (!currentRefreshToken) {
+            throw new Error("No refresh token available");
+        }
+        const response = await axios.post(
+            `${API_CONFIG.BASE_URL}${API_ENDPOINTS.REFRESH}`,
+            { refreshToken: currentRefreshToken },
+            { headers: { "Content-Type": "application/json" } }
+        );
+        const data = response.data;
+        if (data.token) {
+            tokenStorage.setToken(data.token);
+        }
+        if (data.refreshToken) {
+            tokenStorage.setRefreshToken(data.refreshToken);
+        }
+        if (data.user) {
+            tokenStorage.setUser(data.user);
+        }
+        return data;
+    },
+
+    async logout() {
+        const currentRefreshToken = tokenStorage.getRefreshToken();
+        if (currentRefreshToken) {
+            try {
+                await axios.post(
+                    `${API_CONFIG.BASE_URL}${API_ENDPOINTS.LOGOUT}`,
+                    { refreshToken: currentRefreshToken },
+                    { headers: { "Content-Type": "application/json" } }
+                );
+            } catch {
+                // Ignore errors during logout request
+            }
+        }
         tokenStorage.clear();
     },
 

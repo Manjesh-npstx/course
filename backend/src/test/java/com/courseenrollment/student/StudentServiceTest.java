@@ -47,7 +47,6 @@ class StudentServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @InjectMocks
     private StudentService studentService;
 
     private Course mockCourse;
@@ -56,6 +55,7 @@ class StudentServiceTest {
 
     @BeforeEach
     void setUp() {
+        studentService = new StudentService(studentRepository, courseRepository, userRepository);
         mockCourse = new Course("React 101", "Jane Smith", 2);
         mockCourse.setId(1L);
 
@@ -149,6 +149,23 @@ class StudentServiceTest {
         assertThatThrownBy(() -> studentService.create(req))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage("Cannot enroll a disabled student. Please enable the account first.");
+
+        verify(studentRepository, never()).save(any(Student.class));
+    }
+
+    @Test
+    @DisplayName("create should throw ConflictException when maxCoursesPerStudent limit is reached")
+    void create_maxCoursesLimitReached_throwsConflict() {
+        StudentService limitedService = new StudentService(studentRepository, courseRepository, userRepository, 2);
+        CreateStudentRequest req = new CreateStudentRequest("Alice", "alice@test.com", null, 1L);
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(mockCourse));
+        when(studentRepository.countByCourseId(1L)).thenReturn(0L);
+        when(userRepository.findByEmail("alice@test.com")).thenReturn(Optional.of(mockUser));
+        when(studentRepository.countByEmailIgnoreCase("alice@test.com")).thenReturn(2L);
+
+        assertThatThrownBy(() -> limitedService.create(req))
+                .isInstanceOf(ConflictException.class)
+                .hasMessage("Student has reached the maximum course enrollment limit (2).");
 
         verify(studentRepository, never()).save(any(Student.class));
     }

@@ -3,6 +3,7 @@ package com.courseenrollment.auth.dto;
 public class AuthResponse {
     private UserDto user;
     private String token;
+    private String refreshToken;
 
     public AuthResponse() {
     }
@@ -10,6 +11,12 @@ public class AuthResponse {
     public AuthResponse(UserDto user, String token) {
         this.user = user;
         this.token = token;
+    }
+
+    public AuthResponse(UserDto user, String token, String refreshToken) {
+        this.user = user;
+        this.token = token;
+        this.refreshToken = refreshToken;
     }
 
     public UserDto getUser() {
@@ -26,5 +33,13 @@ public class AuthResponse {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

@@ -35,6 +35,9 @@ class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private com.courseenrollment.auth.service.RefreshTokenService refreshTokenService;
+
     private JwtService jwtService;
     private AuthService authService;
     private User mockUser;
@@ -42,10 +45,13 @@ class AuthServiceTest {
     @BeforeEach
     void setUp() {
         jwtService = new JwtService("course-enrollment-secret-key-that-is-at-least-256-bits-long-for-hmac-sha256", 86400000L);
-        authService = new AuthService(userRepository, passwordEncoder, jwtService);
+        authService = new AuthService(userRepository, passwordEncoder, jwtService, refreshTokenService);
 
         mockUser = new User("admin@test.com", "Admin", "$2a$10$hashed", UserRole.ADMIN);
         mockUser.setId(1L);
+
+        lenient().when(refreshTokenService.createRefreshToken(any(User.class)))
+                .thenAnswer(inv -> new com.courseenrollment.auth.entity.RefreshToken("mock-refresh-token", inv.getArgument(0), java.time.Instant.now().plusSeconds(3600)));
     }
 
     @Test
@@ -155,5 +161,46 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.login(req))
                 .isInstanceOf(org.springframework.security.authentication.DisabledException.class)
                 .hasMessage("Account is disabled. Please contact the administrator.");
+    }
+
+    @Test
+    @DisplayName("refreshToken should rotate refresh token and return new access token")
+    void refreshToken_success() {
+        com.courseenrollment.auth.entity.RefreshToken mockRt = new com.courseenrollment.auth.entity.RefreshToken("old-token", mockUser, java.time.Instant.now().plusSeconds(3600));
+        com.courseenrollment.auth.entity.RefreshToken newRt = new com.courseenrollment.auth.entity.RefreshToken("new-token", mockUser, java.time.Instant.now().plusSeconds(3600));
+
+        when(refreshTokenService.findByToken("old-token")).thenReturn(mockRt);
+        when(refreshTokenService.verifyExpiration(mockRt)).thenReturn(mockRt);
+        when(refreshTokenService.rotateRefreshToken(mockRt)).thenReturn(newRt);
+
+        AuthResponse res = authService.refreshToken("old-token");
+
+        assertThat(res).isNotNull();
+        assertThat(res.getToken()).isNotBlank();
+        assertThat(res.getRefreshToken()).isEqualTo("new-token");
+        assertThat(res.getUser().getEmail()).isEqualTo("admin@test.com");
+    }
+
+    @Test
+    @DisplayName("refreshToken should throw DisabledException when user is disabled")
+    void refreshToken_disabledUser() {
+        mockUser.setStatus(com.courseenrollment.auth.enums.UserStatus.DISABLED);
+        com.courseenrollment.auth.entity.RefreshToken mockRt = new com.courseenrollment.auth.entity.RefreshToken("old-token", mockUser, java.time.Instant.now().plusSeconds(3600));
+
+        when(refreshTokenService.findByToken("old-token")).thenReturn(mockRt);
+        when(refreshTokenService.verifyExpiration(mockRt)).thenReturn(mockRt);
+
+        assertThatThrownBy(() -> authService.refreshToken("old-token"))
+                .isInstanceOf(org.springframework.security.authentication.DisabledException.class)
+                .hasMessage("Account is disabled. Please contact the administrator.");
+
+        verify(refreshTokenService).revokeAllUserTokens(mockUser);
+    }
+
+    @Test
+    @DisplayName("logout should revoke refresh token")
+    void logout_success() {
+        authService.logout("refresh-to-revoke");
+        verify(refreshTokenService).revokeToken("refresh-to-revoke");
     }
 }

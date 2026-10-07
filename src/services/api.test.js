@@ -75,4 +75,41 @@ describe("api client interceptors", () => {
             responseInterceptor.rejected(validationError)
         ).rejects.toThrow("seatLimit must not be empty, name is required");
     });
+
+    it("silently refreshes token on 401 when refresh token is available", async () => {
+        tokenStorage.setToken("expired-access");
+        tokenStorage.setRefreshToken("valid-refresh");
+
+        const axios = (await import("axios")).default;
+        const postSpy = vi.spyOn(axios, "post").mockResolvedValue({
+            data: {
+                token: "new-access-token",
+                refreshToken: "new-refresh-token",
+                user: { id: 1, name: "Alice" },
+            },
+        });
+
+        const originalRequest = {
+            url: "/courses",
+            headers: {},
+        };
+
+        const error401 = {
+            config: originalRequest,
+            response: {
+                status: 401,
+                data: { message: "Unauthorized" },
+            },
+        };
+
+        const responseInterceptor = api.interceptors.response.handlers[0];
+        // Mock api call to simulate retry
+        const apiSpy = vi.spyOn(api, "request").mockResolvedValue({ success: true });
+
+        await responseInterceptor.rejected(error401);
+
+        expect(postSpy).toHaveBeenCalled();
+        expect(tokenStorage.getToken()).toBe("new-access-token");
+        expect(tokenStorage.getRefreshToken()).toBe("new-refresh-token");
+    });
 });

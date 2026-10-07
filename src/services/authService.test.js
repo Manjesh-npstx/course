@@ -84,13 +84,63 @@ describe("authService", () => {
         expect(tokenStorage.getUser()?.role).toBe("admin");
     });
 
-    it("logout clears stored token and user data", () => {
+    it("login successfully saves token, refreshToken, and user to tokenStorage", async () => {
+        const mockUser = {
+            id: 1,
+            name: "John",
+            email: "john@campus.com",
+            role: "student",
+        };
+        vi.spyOn(api, "post").mockResolvedValue({
+            user: mockUser,
+            token: "jwt-token-123",
+            refreshToken: "jwt-refresh-123",
+        });
+
+        const res = await authService.login({
+            email: "john@campus.com",
+            password: "Password1!",
+        });
+
+        expect(res.user).toEqual(mockUser);
+        expect(tokenStorage.getToken()).toBe("jwt-token-123");
+        expect(tokenStorage.getRefreshToken()).toBe("jwt-refresh-123");
+        expect(tokenStorage.getUser()).toEqual(mockUser);
+    });
+
+    it("refreshToken exchanges stored refresh token for new tokens", async () => {
+        tokenStorage.setRefreshToken("current-refresh-token");
+        const mockUser = { id: 1, name: "John", email: "john@campus.com" };
+
+        const axios = (await import("axios")).default;
+        vi.spyOn(axios, "post").mockResolvedValue({
+            data: {
+                token: "new-access-token",
+                refreshToken: "new-refresh-token",
+                user: mockUser,
+            },
+        });
+
+        const res = await authService.refreshToken();
+
+        expect(res.token).toBe("new-access-token");
+        expect(tokenStorage.getToken()).toBe("new-access-token");
+        expect(tokenStorage.getRefreshToken()).toBe("new-refresh-token");
+    });
+
+    it("refreshToken throws error when no refresh token stored", async () => {
+        await expect(authService.refreshToken()).rejects.toThrow("No refresh token available");
+    });
+
+    it("logout clears stored token, refresh token, and user data", async () => {
         tokenStorage.setToken("token-to-clear");
+        tokenStorage.setRefreshToken("refresh-to-clear");
         tokenStorage.setUser({ id: 1, name: "Test" });
 
-        authService.logout();
+        await authService.logout();
 
         expect(authService.isAuthenticated()).toBe(false);
         expect(authService.getCurrentUser()).toBeNull();
+        expect(tokenStorage.getRefreshToken()).toBeNull();
     });
 });

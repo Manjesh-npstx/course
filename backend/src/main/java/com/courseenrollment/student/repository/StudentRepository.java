@@ -18,6 +18,9 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     @Query("SELECT COUNT(s) FROM Student s WHERE s.course.id = :courseId")
     long countByCourseId(@Param("courseId") Long courseId);
 
+    @Query("SELECT COUNT(s) FROM Student s WHERE LOWER(s.email) = LOWER(:email)")
+    long countByEmailIgnoreCase(@Param("email") String email);
+
     boolean existsByEmail(String email);
 
     boolean existsByEmailAndIdNot(String email, Long id);

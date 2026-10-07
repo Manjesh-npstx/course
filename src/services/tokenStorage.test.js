@@ -44,12 +44,16 @@ describe("tokenStorage", () => {
         expect(tokenStorage.getUser()).toEqual(user);
     });
 
-    it("clears token and user on clear()", () => {
+    it("clears token, refresh token, and user on clear()", () => {
         tokenStorage.setToken("jwt-123");
+        tokenStorage.setRefreshToken("refresh-456");
         tokenStorage.setUser({ id: 2, name: "Bob" });
+
+        expect(tokenStorage.getRefreshToken()).toBe("refresh-456");
 
         tokenStorage.clear();
         expect(tokenStorage.getToken()).toBeNull();
+        expect(tokenStorage.getRefreshToken()).toBeNull();
         expect(tokenStorage.getUser()).toBeNull();
         expect(tokenStorage.hasToken()).toBe(false);
     });

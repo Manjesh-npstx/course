@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,11 +33,22 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final int maxCoursesPerStudent;
 
-    public StudentService(StudentRepository studentRepository, CourseRepository courseRepository, UserRepository userRepository) {
+    @org.springframework.beans.factory.annotation.Autowired
+    public StudentService(
+            StudentRepository studentRepository,
+            CourseRepository courseRepository,
+            UserRepository userRepository,
+            @Value("${app.enrollment.max-courses-per-student:0}") int maxCoursesPerStudent) {
         this.studentRepository = studentRepository;
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
+        this.maxCoursesPerStudent = maxCoursesPerStudent;
+    }
+
+    public StudentService(StudentRepository studentRepository, CourseRepository courseRepository, UserRepository userRepository) {
+        this(studentRepository, courseRepository, userRepository, 0);
     }
 
     @Transactional
@@ -61,6 +73,13 @@ public class StudentService {
         }
         if (user.getStatus() == UserStatus.DISABLED) {
             throw new BadRequestException("Cannot enroll a disabled student. Please enable the account first.");
+        }
+
+        if (maxCoursesPerStudent > 0) {
+            long enrolledCount = studentRepository.countByEmailIgnoreCase(email);
+            if (enrolledCount >= maxCoursesPerStudent) {
+                throw new ConflictException("Student has reached the maximum course enrollment limit (" + maxCoursesPerStudent + ").");
+            }
         }
 
         if (studentRepository.existsByEmailIgnoreCaseAndCourseId(email, req.getCourseId())) {
