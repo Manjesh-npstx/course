@@ -111,7 +111,16 @@ export function CourseTable({
                                         {course.name}
                                     </Link>
                                 </td>
-                                <td>{course.instructor}</td>
+                                <td>
+                                    <div className="table-instructor-name">
+                                        {course.instructor}
+                                    </div>
+                                    {course.instructorEmail && (
+                                        <div className="table-instructor-email">
+                                            {course.instructorEmail}
+                                        </div>
+                                    )}
+                                </td>
                                 <td>{getStatusBadge(course.status)}</td>
                                 <td>{getSeatBadge(course)}</td>
                                 {showActions && (

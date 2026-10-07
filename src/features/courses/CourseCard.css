@@ -41,6 +41,12 @@
     color: var(--text-secondary);
 }
 
+.course-card-instructor-email {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 400;
+}
+
 .course-card-actions {
     display: flex;
     flex-wrap: wrap;

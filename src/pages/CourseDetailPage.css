@@ -48,6 +48,12 @@
     margin: 0;
 }
 
+.course-detail-instructor-email {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
 .course-detail-seats {
     margin-top: var(--spacing-medium);
 }

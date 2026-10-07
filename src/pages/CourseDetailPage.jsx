@@ -220,6 +220,12 @@ export function CourseDetailPage() {
                         </div>
                         <p className="course-detail-meta">
                             Instructor: <strong>{course?.instructor}</strong>
+                            {course?.instructorEmail && (
+                                <span className="course-detail-instructor-email">
+                                    {" "}
+                                    ({course.instructorEmail})
+                                </span>
+                            )}
                         </p>
                     </div>
 

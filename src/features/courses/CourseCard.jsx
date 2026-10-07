@@ -30,6 +30,12 @@ export function CourseCard({
             <div className="course-card-meta">
                 <span>
                     <strong>Instructor:</strong> {course.instructor}
+                    {course.instructorEmail && (
+                        <span className="course-card-instructor-email">
+                            {" "}
+                            ({course.instructorEmail})
+                        </span>
+                    )}
                 </span>
                 <span>
                     <strong>Seats:</strong> {enrolledCount} / {course.seatLimit}

@@ -119,3 +119,14 @@
     flex-wrap: wrap;
     gap: 4px;
 }
+
+.table-instructor-name {
+    font-weight: 500;
+}
+
+.table-instructor-email {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
