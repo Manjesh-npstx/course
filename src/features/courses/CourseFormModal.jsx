@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Alert from "@/components/common/Alert";
 import Button from "@/components/common/Button";
@@ -14,6 +14,7 @@ export function CourseFormModal({
     onSubmit,
     course = null,
     defaultInstructor = "",
+    isInstructorFixed = false,
 }) {
     const [name, setName] = useState(course?.name || "");
     const [instructor, setInstructor] = useState(
@@ -23,6 +24,16 @@ export function CourseFormModal({
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    useEffect(() => {
+        if (isInstructorFixed) {
+            if (course?.instructor) {
+                setInstructor(course.instructor);
+            } else if (defaultInstructor) {
+                setInstructor(defaultInstructor);
+            }
+        }
+    }, [isInstructorFixed, course, defaultInstructor]);
+
     async function handleSubmit(event) {
         event.preventDefault();
         setError("");
@@ -31,7 +42,11 @@ export function CourseFormModal({
             setError("Course name is required");
             return;
         }
-        if (!instructor.trim()) {
+        const effectiveInstructor = isInstructorFixed
+            ? (course?.instructor || defaultInstructor || instructor || "").trim()
+            : instructor.trim();
+
+        if (!effectiveInstructor) {
             setError("Instructor name is required");
             return;
         }
@@ -45,7 +60,7 @@ export function CourseFormModal({
         try {
             await onSubmit({
                 name: name.trim(),
-                instructor: instructor.trim(),
+                instructor: effectiveInstructor,
                 seatLimit: seats,
             });
             onClose();
@@ -77,10 +92,19 @@ export function CourseFormModal({
                     name="instructor"
                     label="Instructor"
                     placeholder="e.g. Dr. Jane Doe"
-                    value={instructor}
+                    value={
+                        isInstructorFixed
+                            ? (course?.instructor || defaultInstructor || instructor)
+                            : instructor
+                    }
                     onChange={(e) => setInstructor(e.target.value)}
-                    disabled={isSubmitting}
+                    disabled={isInstructorFixed || isSubmitting}
                     required
+                    helperText={
+                        isInstructorFixed
+                            ? "Instructor is locked to your account profile."
+                            : ""
+                    }
                 />
                 <Input
                     id="course-seat-limit"
@@ -121,6 +145,7 @@ CourseFormModal.propTypes = {
     onSubmit: PropTypes.func.isRequired,
     course: PropTypes.object,
     defaultInstructor: PropTypes.string,
+    isInstructorFixed: PropTypes.bool,
 };
 
 export default CourseFormModal;

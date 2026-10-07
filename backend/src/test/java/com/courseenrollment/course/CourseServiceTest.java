@@ -1,6 +1,8 @@
 package com.courseenrollment.course;
 
+import com.courseenrollment.auth.entity.User;
 import com.courseenrollment.auth.enums.UserRole;
+import com.courseenrollment.auth.repository.UserRepository;
 import com.courseenrollment.common.dto.PaginatedResponse;
 import com.courseenrollment.common.exception.ConflictException;
 import com.courseenrollment.common.exception.ResourceNotFoundException;
@@ -41,6 +43,9 @@ class CourseServiceTest {
     @Mock
     private StudentRepository studentRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private CourseService courseService;
 
@@ -69,16 +74,20 @@ class CourseServiceTest {
     }
 
     @Test
-    @DisplayName("create by instructor should save course with PENDING status")
+    @DisplayName("create by instructor should save course with PENDING status and use registered instructor name")
     void create_instructor_creates_pending_course() {
+        User instructorUser = new User("instructor@test.com", "Dr. Jane Instructor", "hashed", UserRole.INSTRUCTOR, null, "1234567890");
+        when(userRepository.findByEmail("instructor@test.com")).thenReturn(Optional.of(instructorUser));
+
         CreateCourseRequest req = new CreateCourseRequest("NodeJS 101", null, 20);
-        Course pendingCourse = new Course("NodeJS 101", "instructor@test.com", 20, CourseStatus.PENDING, "instructor@test.com");
+        Course pendingCourse = new Course("NodeJS 101", "Dr. Jane Instructor", 20, CourseStatus.PENDING, "instructor@test.com");
         when(courseRepository.save(any(Course.class))).thenReturn(pendingCourse);
 
         Course created = courseService.create(req, "instructor@test.com", UserRole.INSTRUCTOR);
 
         assertThat(created).isNotNull();
         assertThat(created.getStatus()).isEqualTo(CourseStatus.PENDING);
+        assertThat(created.getInstructor()).isEqualTo("Dr. Jane Instructor");
         assertThat(created.getInstructorEmail()).isEqualTo("instructor@test.com");
         verify(courseRepository).save(any(Course.class));
     }

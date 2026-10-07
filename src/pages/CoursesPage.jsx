@@ -342,6 +342,7 @@ export function CoursesPage() {
                 }}
                 onSubmit={handleSaveCourse}
                 defaultInstructor={isInstructor ? user?.name : ""}
+                isInstructorFixed={isInstructor}
             />
 
             <ConfirmDialog

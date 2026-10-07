@@ -1,6 +1,8 @@
 package com.courseenrollment.course.service;
 
+import com.courseenrollment.auth.entity.User;
 import com.courseenrollment.auth.enums.UserRole;
+import com.courseenrollment.auth.repository.UserRepository;
 import com.courseenrollment.common.dto.PageMeta;
 import com.courseenrollment.common.dto.PaginatedResponse;
 import com.courseenrollment.common.exception.ConflictException;
@@ -24,10 +26,16 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
 
-    public CourseService(CourseRepository courseRepository, StudentRepository studentRepository) {
+    public CourseService(
+            CourseRepository courseRepository,
+            StudentRepository studentRepository,
+            UserRepository userRepository
+    ) {
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -37,9 +45,18 @@ public class CourseService {
 
     @Transactional
     public Course create(CreateCourseRequest req, String userEmail, UserRole role) {
-        String instructorName = (req.getInstructor() != null && !req.getInstructor().trim().isEmpty())
-                ? req.getInstructor().trim()
-                : (userEmail != null ? userEmail : "Instructor");
+        String instructorName;
+        if (role == UserRole.INSTRUCTOR && userEmail != null && userRepository != null) {
+            instructorName = userRepository.findByEmail(userEmail)
+                    .map(User::getName)
+                    .orElseGet(() -> (req.getInstructor() != null && !req.getInstructor().trim().isEmpty())
+                            ? req.getInstructor().trim()
+                            : userEmail);
+        } else {
+            instructorName = (req.getInstructor() != null && !req.getInstructor().trim().isEmpty())
+                    ? req.getInstructor().trim()
+                    : (userEmail != null ? userEmail : "Instructor");
+        }
 
         CourseStatus initialStatus = (role == UserRole.INSTRUCTOR)
                 ? CourseStatus.PENDING

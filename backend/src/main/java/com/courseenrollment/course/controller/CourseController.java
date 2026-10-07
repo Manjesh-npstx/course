@@ -151,8 +151,21 @@ public class CourseController {
     @Operation(summary = "Update a course (Admin or course instructor)")
     public ResponseEntity<Course> update(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateCourseRequest req
+            @Valid @RequestBody UpdateCourseRequest req,
+            Authentication auth
     ) {
+        UserRole role = determineUserRole(auth);
+        String email = auth != null ? auth.getName() : null;
+        if (role == UserRole.INSTRUCTOR) {
+            Course existing = courseService.findOne(id);
+            if (existing.getInstructorEmail() != null && !existing.getInstructorEmail().equalsIgnoreCase(email)) {
+                throw new AccessDeniedException("Instructors can only update their own courses");
+            }
+            if (req.getStatus() != null) {
+                throw new AccessDeniedException("Instructors cannot update course status directly");
+            }
+            req.setInstructor(null);
+        }
         Course course = courseService.update(id, req);
         return ResponseEntity.ok(course);
     }
