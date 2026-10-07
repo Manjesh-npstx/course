@@ -15,7 +15,24 @@
 | **Backend**         | Spring Boot 3.3.3 (Java 17)                                | RESTful API, Domain-Driven Service layer, business validation            |
 | **Security**        | Spring Security 6 + JWT                                    | Stateless authentication, HMAC-SHA512 token signing, method-level RBAC   |
 | **Database**        | SQLite + Spring Data JPA                                   | Relational persistence, lightweight, self-contained single file          |
-| **Testing**         | Vitest (UI) + JUnit 5/Mockito (Backend) + Newman (Postman) | 63 UI tests, 69 Backend tests, 44 Automated API integration tests        |
+| **Testing**         | Vitest (UI) + JUnit 5/Mockito (Backend) + Newman (Postman) | 62 UI tests, 69 Backend tests, 44 Automated API integration tests        |
+
+---
+
+## 📑 Table of Contents
+
+1. [⏱️ Section 1: 1–2 Minute Project Overview (What to Say Out Loud)](#-section-1-12-minute-project-overview-what-to-say-out-loud)
+2. [📂 Section 2: Folder Structure & Architecture Rationale](#-section-2-folder-structure--why-its-organized-that-way)
+3. [🔄 Section 3: Feature Walkthrough End-to-End (Student Enrollment)](#-section-3-feature-walkthrough-end-to-end-student-course-enrollment)
+4. [🔐 Section 4: Auth Flow & Role-Based Access Control (RBAC)](#-section-4-auth-flow--role-based-access-control-rbac)
+5. [🛡️ Section 5: Key Business Rules & Guardrails](#-section-5-key-business-rules--guardrails)
+6. [❓ Section 6: Top 15 "Why" Questions & Trap Viva Questions](#-section-6-top-15-why-questions--trap-viva-questions)
+7. [💻 Section 7: Live Code Change Cheat Sheet](#-section-7-live-code-change-cheat-sheet)
+8. [📋 Section 8: Honesty Checklist (Done vs Future Scope)](#-section-8-honesty-checklist-what-is-done-vs-future-scope)
+9. [🎯 Section 9: Demo Day Playbook (Live Demo Script & Test Accounts)](#-section-9-demo-day-playbook-live-demo-script--test-accounts)
+10. [🚀 Section 10: Run & Verification Commands Checklist](#-section-10-run--verification-commands-checklist)
+11. [🗄️ Section 11: Relational Database Schema & ER Diagram](#️-section-11-relational-database-schema--er-diagram)
+12. [🗺️ Section 12: Feature-to-Code Traceability Matrix](#️-section-12-feature-to-code-traceability-matrix)
 
 ---
 
@@ -362,3 +379,180 @@ sequenceDiagram
 2. **Email Notifications**: Integration with Spring Mail / SendGrid to send emails on course approval or enrollment confirmation.
 3. **Database Migration to PostgreSQL**: For cloud deployment (e.g., AWS RDS / Docker) with connection pooling.
 4. **WebSocket Real-time Updates**: Live updates of available seats across multiple students browsing simultaneously.
+
+---
+
+## 🎯 Section 9: Demo Day Playbook (Live Demo Script & Test Accounts)
+
+### 1. Test Accounts Cheat Sheet
+
+| Role           | Email                   | Password         | Allowed Capabilities                                                         |
+| :------------- | :---------------------- | :--------------- | :--------------------------------------------------------------------------- |
+| **Admin**      | `admin@campus.com`      | `Admin123!`      | Approve/Reject courses, manage users, delete courses, master enrollment      |
+| **Instructor** | `instructor@campus.com` | `Instructor123!` | Propose courses (starts PENDING), view own courses & student rosters         |
+| **Student**    | `student@campus.com`    | `Student123!`    | Browse approved courses, self-enroll, view enrolled classmates, edit profile |
+
+---
+
+### 2. Five-Minute Flawless Live Demo Flow
+
+Follow this exact sequence to showcase all 3 tiers of RBAC and all business logic in under 5 minutes:
+
+#### Act 1: The Instructor Proposes a Course
+
+1. Log in as `instructor@campus.com`.
+2. Click **"+ New Course"** in the header.
+3. Create:
+    - **Course Name**: `"Distributed Systems Engineering"`
+    - **Seat Limit**: `15`
+4. Notice that it immediately shows with a **`PENDING`** badge.
+5. Switch between **"All Courses"** and **"My Courses"** tabs to prove personal course filtering works.
+6. Log out.
+
+#### Act 2: The Admin Reviews & Approves
+
+1. Log in as `admin@campus.com`.
+2. Navigate to the **Courses** page. Notice the newly proposed `"Distributed Systems Engineering"` is visible with **Approve** (green check) and **Reject** (red cross) buttons.
+3. Click the **Approve** button.
+    - Status badge transitions from `PENDING` $\rightarrow$ `APPROVED`.
+4. Navigate to **Students / Users Directory**.
+    - Show how the Admin can toggle user accounts between `ACTIVE` and `DISABLED`.
+    - Explain: _"If a student is disabled here, they are blocked from logging in or enrolling."_
+5. Log out.
+
+#### Act 3: The Student Enrolls
+
+1. Log in as `student@campus.com`.
+2. Open the **Courses** catalog:
+    - Notice that `"Distributed Systems Engineering"` is now public and available.
+3. Click **"Enroll"**:
+    - Green toast banner confirms enrollment.
+    - Available seats updates in real time (`0 / 15` $\rightarrow$ `1 / 15`).
+    - Button turns into an **"Enrolled"** badge.
+4. Click on the course card to open **Course Details**:
+    - Show the visual seat progress bar.
+    - Show the **Enrolled Students** table where the student can see themselves and peers in the same class.
+
+#### Act 4: Showcasing Data Integrity & Guardrails
+
+1. Log back in as `admin@campus.com`.
+2. Try to **Delete** the course that the student just enrolled in:
+    - UI confirms deletion request.
+    - Backend responds with a **HTTP 409 Conflict** error.
+    - Red toast appears: _"Cannot delete course with active student enrollments. Please unenroll all students first."_
+3. **Point out to examiners:** _"This proves our system has full referential integrity protection and zero accidental data loss."_
+
+---
+
+## 🚀 Section 10: Run & Verification Commands Checklist
+
+Keep this open during presentation prep. If asked to run tests or restart servers:
+
+### 1. Starting the Application
+
+```bash
+# Terminal 1 - Backend (Spring Boot on Port 3000)
+cd /Users/manjesh/Desktop/Course/course/backend
+JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./mvnw spring-boot:run
+
+# Terminal 2 - Frontend (Vite React on Port 5173)
+cd /Users/manjesh/Desktop/Course/course
+npm run dev
+```
+
+### 2. Pre-Presentation Automated Verification Commands
+
+Run these before any demo to ensure clean status:
+
+```bash
+# 1. Code Style / Prettier
+npm run format
+
+# 2. Frontend Linter (Expect: 0 errors, 0 warnings)
+npm run lint
+
+# 3. Frontend Unit Tests (Expect: 9 suites, 62/62 passed)
+npm test -- --run
+
+# 4. Production Build (Expect: dist/ assets generated without errors)
+npm run build
+
+# 5. Backend Unit & Mockito Tests (Expect: 69/69 passed)
+cd backend && JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./mvnw test
+```
+
+### 3. Database Location & Reset
+
+- **File**: `backend/database.sqlite`
+- **Inspect**: Open with `sqlite3 backend/database.sqlite` or any SQLite viewer.
+- **Fresh Start**: If you ever need to reset seed data to factory defaults, stop the backend, delete `backend/database.sqlite`, and start `./mvnw spring-boot:run` (Spring Boot re-creates and seeds automatically).
+
+---
+
+## 🗄️ Section 11: Relational Database Schema & ER Diagram
+
+```mermaid
+erDiagram
+    USERS ||--o{ REFRESH_TOKENS : has
+    USERS ||--o{ COURSES : creates_or_instructs
+    COURSES ||--o{ STUDENTS : enrolls
+    USERS ||--o{ STUDENTS : represents
+
+    USERS {
+        bigint id PK
+        varchar name
+        varchar email UK "Indexed, Unique"
+        varchar password "BCrypt Hash"
+        varchar phone "10-15 digits"
+        varchar role "ADMIN, INSTRUCTOR, STUDENT"
+        varchar status "ACTIVE, DISABLED"
+        timestamp created_at
+    }
+
+    REFRESH_TOKENS {
+        bigint id PK
+        varchar token UK "UUID string"
+        bigint user_id FK
+        timestamp expiry_date "7 days"
+        boolean revoked "Default false"
+    }
+
+    COURSES {
+        bigint id PK
+        varchar name
+        varchar instructor "Display Name"
+        varchar instructor_email "FK to Users.email"
+        int seat_limit "Min 1"
+        varchar status "PENDING, APPROVED, REJECTED"
+        timestamp created_at
+    }
+
+    STUDENTS {
+        bigint id PK
+        varchar name
+        varchar email "Student email"
+        varchar enroll_date
+        bigint course_id FK
+    }
+```
+
+> **Key Database Constraint Highlight for Viva:**
+> The `students` table has a **Composite Unique Index**: `UNIQUE(email, course_id)`.
+> This guarantees at the database engine level that a student can never be enrolled twice in the same course, even under concurrent race conditions.
+
+---
+
+## 🗺️ Section 12: Feature-to-Code Traceability Matrix
+
+Use this quick reference to open files instantly during code inspection:
+
+| Capability / Requirement          | Frontend File                                                                                                                                                                                                         | Backend File                                     | Database Table            |
+| :-------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- | :------------------------ |
+| **Authentication & Tokens**       | [`authService.js`](file:///Users/manjesh/Desktop/Course/course/src/services/authService.js), [`tokenStorage.js`](file:///Users/manjesh/Desktop/Course/course/src/services/tokenStorage.js)                            | `AuthController.java`, `AuthService.java`        | `users`, `refresh_tokens` |
+| **Silent Refresh & Interceptors** | [`api.js`](file:///Users/manjesh/Desktop/Course/course/src/services/api.js)                                                                                                                                           | `JwtAuthFilter.java`, `RefreshTokenService.java` | `refresh_tokens`          |
+| **Role-Based Routing**            | [`ProtectedRoute.jsx`](file:///Users/manjesh/Desktop/Course/course/src/components/layout/ProtectedRoute.jsx)                                                                                                          | `SecurityConfig.java` (`@PreAuthorize`)          | N/A                       |
+| **Course Catalog & Search**       | [`CoursesPage.jsx`](file:///Users/manjesh/Desktop/Course/course/src/pages/CoursesPage.jsx), [`courseService.js`](file:///Users/manjesh/Desktop/Course/course/src/services/courseService.js)                           | `CourseController.java`, `CourseService.java`    | `courses`                 |
+| **Course Approval Workflow**      | [`CoursesPage.jsx`](file:///Users/manjesh/Desktop/Course/course/src/pages/CoursesPage.jsx), [`CourseDetailPage.jsx`](file:///Users/manjesh/Desktop/Course/course/src/pages/CourseDetailPage.jsx)                      | `CourseController.java` (`/approve`, `/reject`)  | `courses`                 |
+| **Student Enrollment & Caps**     | [`courseService.js`](file:///Users/manjesh/Desktop/Course/course/src/services/courseService.js), [`EnrollStudentModal.jsx`](file:///Users/manjesh/Desktop/Course/course/src/features/students/EnrollStudentModal.jsx) | `CourseController.java`, `StudentService.java`   | `students`, `courses`     |
+| **User Directory Management**     | [`StudentsPage.jsx`](file:///Users/manjesh/Desktop/Course/course/src/pages/StudentsPage.jsx), [`userService.js`](file:///Users/manjesh/Desktop/Course/course/src/services/userService.js)                             | `UserController.java`, `UserService.java`        | `users`                   |
+| **Password Change & Profile**     | [`ProfilePage.jsx`](file:///Users/manjesh/Desktop/Course/course/src/pages/ProfilePage.jsx), [`resetPasswordSchema.js`](file:///Users/manjesh/Desktop/Course/course/src/features/auth/resetPasswordSchema.js)          | `AuthController.java` (`/change-password`)       | `users`                   |
