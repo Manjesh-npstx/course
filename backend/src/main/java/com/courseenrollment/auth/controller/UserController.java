@@ -50,6 +50,15 @@ public class UserController {
         return ResponseEntity.ok(students);
     }
 
+    @GetMapping("/instructors")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "List active instructors for course assignment picker (Admin only)")
+    public ResponseEntity<List<UserDto>> findActiveInstructors() {
+        List<UserDto> instructors = userService.findActiveInstructors();
+        return ResponseEntity.ok(instructors);
+    }
+
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "BearerAuth")

@@ -47,6 +47,26 @@ describe("userService", () => {
         expect(res[0].name).toBe("Bob");
     });
 
+    it("getActiveInstructors calls api.get with /users/instructors", async () => {
+        const getSpy = vi
+            .spyOn(api, "get")
+            .mockResolvedValue([
+                {
+                    id: 4,
+                    name: "Dr. Jane",
+                    email: "jane@campus.com",
+                    role: "instructor",
+                },
+            ]);
+
+        const res = await userService.getActiveInstructors();
+
+        expect(getSpy).toHaveBeenCalledWith("/users/instructors");
+        expect(res).toHaveLength(1);
+        expect(res[0].name).toBe("Dr. Jane");
+        expect(res[0].email).toBe("jane@campus.com");
+    });
+
     it("updateStatus sends PATCH request with new status", async () => {
         const patchSpy = vi.spyOn(api, "patch").mockResolvedValue({
             id: 3,

@@ -167,6 +167,7 @@ public class CourseController {
                 throw new AccessDeniedException("Instructors cannot update course status directly");
             }
             req.setInstructor(null);
+            req.setInstructorEmail(null);
         }
         Course course = courseService.update(id, req);
         return ResponseEntity.ok(course);

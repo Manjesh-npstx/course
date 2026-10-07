@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Alert from "@/components/common/Alert";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import Modal from "@/components/common/Modal";
+import { userService } from "@/services/userService";
 
 /**
  * Modal form dialog for creating or editing a course.
@@ -15,14 +16,57 @@ export function CourseFormModal({
     course = null,
     defaultInstructor = "",
     isInstructorFixed = false,
+    instructors = [],
 }) {
     const [name, setName] = useState(course?.name || "");
-    const [instructor, setInstructor] = useState(
-        course?.instructor || defaultInstructor || ""
+    const [selectedInstructorEmail, setSelectedInstructorEmail] = useState(
+        course?.instructorEmail || ""
     );
     const [seatLimit, setSeatLimit] = useState(course?.seatLimit || 30);
+    const [fetchedInstructors, setFetchedInstructors] = useState([]);
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const instructorList =
+        instructors.length > 0 ? instructors : fetchedInstructors;
+
+    useEffect(() => {
+        let isMounted = true;
+        if (isOpen && !isInstructorFixed && instructors.length === 0) {
+            userService
+                .getActiveInstructors()
+                .then((data) => {
+                    if (isMounted) {
+                        setFetchedInstructors(data || []);
+                    }
+                })
+                .catch(() => {
+                    // Ignore background load error
+                });
+        }
+        return () => {
+            isMounted = false;
+        };
+    }, [isOpen, isInstructorFixed, instructors.length]);
+
+    // Derive active email selection if editing existing course
+    const activeEmail =
+        selectedInstructorEmail ||
+        (course?.instructorEmail
+            ? course.instructorEmail
+            : course?.instructor
+              ? instructorList.find(
+                    (i) =>
+                        i.name.toLowerCase() ===
+                            course.instructor.toLowerCase() ||
+                        i.email.toLowerCase() ===
+                            course.instructor.toLowerCase()
+                )?.email || ""
+              : "");
+
+    function handleInstructorChange(event) {
+        setSelectedInstructorEmail(event.target.value);
+    }
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -32,19 +76,29 @@ export function CourseFormModal({
             setError("Course name is required");
             return;
         }
-        const effectiveInstructor = isInstructorFixed
-            ? (
-                  course?.instructor ||
-                  defaultInstructor ||
-                  instructor ||
-                  ""
-              ).trim()
-            : instructor.trim();
 
-        if (!effectiveInstructor) {
+        const effectiveEmail = isInstructorFixed
+            ? (course?.instructorEmail || "").trim()
+            : activeEmail.trim();
+
+        if (!isInstructorFixed && !effectiveEmail) {
+            setError("Please select an instructor");
+            return;
+        }
+
+        const matchedInstructor = instructorList.find(
+            (i) => i.email.toLowerCase() === effectiveEmail.toLowerCase()
+        );
+
+        const effectiveName = isInstructorFixed
+            ? (course?.instructor || defaultInstructor || "").trim()
+            : (matchedInstructor?.name || course?.instructor || "").trim();
+
+        if (!effectiveName) {
             setError("Instructor name is required");
             return;
         }
+
         const seats = Number(seatLimit);
         if (Number.isNaN(seats) || seats < 1) {
             setError("Seat limit must be at least 1");
@@ -55,7 +109,8 @@ export function CourseFormModal({
         try {
             await onSubmit({
                 name: name.trim(),
-                instructor: effectiveInstructor,
+                instructor: effectiveName,
+                instructorEmail: effectiveEmail || null,
                 seatLimit: seats,
             });
             onClose();
@@ -82,27 +137,63 @@ export function CourseFormModal({
                     disabled={isSubmitting}
                     required
                 />
-                <Input
-                    id="course-instructor"
-                    name="instructor"
-                    label="Instructor"
-                    placeholder="e.g. Dr. Jane Doe"
-                    value={
-                        isInstructorFixed
-                            ? course?.instructor ||
-                              defaultInstructor ||
-                              instructor
-                            : instructor
-                    }
-                    onChange={(e) => setInstructor(e.target.value)}
-                    disabled={isInstructorFixed || isSubmitting}
-                    required
-                    helperText={
-                        isInstructorFixed
-                            ? "Instructor is locked to your account profile."
-                            : ""
-                    }
-                />
+                {isInstructorFixed ? (
+                    <Input
+                        id="course-instructor"
+                        name="instructor"
+                        label="Instructor"
+                        placeholder="e.g. Dr. Jane Doe"
+                        value={course?.instructor || defaultInstructor || ""}
+                        disabled
+                        required
+                        helperText="Instructor is locked to your account profile."
+                    />
+                ) : (
+                    <div className="input-group">
+                        <label
+                            htmlFor="course-instructor-select"
+                            className="input-label"
+                        >
+                            Instructor{" "}
+                            <span
+                                className="required-asterisk"
+                                aria-hidden="true"
+                            >
+                                *
+                            </span>
+                        </label>
+                        <select
+                            id="course-instructor-select"
+                            name="instructor"
+                            className="input-field"
+                            value={activeEmail}
+                            onChange={handleInstructorChange}
+                            disabled={isSubmitting}
+                            required
+                        >
+                            <option value="">Select an instructor...</option>
+                            {instructorList.map((inst) => (
+                                <option
+                                    key={inst.id || inst.email}
+                                    value={inst.email}
+                                >
+                                    {inst.name} ({inst.email})
+                                </option>
+                            ))}
+                        </select>
+                        {instructorList.length === 0 && (
+                            <p
+                                className="input-helper-text"
+                                style={{
+                                    color: "var(--color-warning, #d97706)",
+                                }}
+                            >
+                                No active instructors found. An instructor must
+                                register first.
+                            </p>
+                        )}
+                    </div>
+                )}
                 <Input
                     id="course-seat-limit"
                     name="seatLimit"
@@ -143,6 +234,7 @@ CourseFormModal.propTypes = {
     course: PropTypes.object,
     defaultInstructor: PropTypes.string,
     isInstructorFixed: PropTypes.bool,
+    instructors: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default CourseFormModal;

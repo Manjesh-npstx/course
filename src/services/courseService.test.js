@@ -54,6 +54,25 @@ describe("courseService", () => {
         expect(res.id).toBe(2);
     });
 
+    it("createCourse sends POST request with instructorEmail", async () => {
+        const newCourse = {
+            name: "Cyber Security",
+            instructor: "Dr. Jane Instructor",
+            instructorEmail: "instructor1@campus.com",
+            seatLimit: 25,
+        };
+        const postSpy = vi.spyOn(api, "post").mockResolvedValue({
+            id: 3,
+            ...newCourse,
+            status: "approved",
+        });
+
+        const res = await courseService.createCourse(newCourse);
+
+        expect(postSpy).toHaveBeenCalledWith("/courses", newCourse);
+        expect(res.instructorEmail).toBe("instructor1@campus.com");
+    });
+
     it("enroll sends POST request to course enroll endpoint with optional name", async () => {
         const postSpy = vi.spyOn(api, "post").mockResolvedValue({ id: 1 });
 

@@ -40,6 +40,15 @@ export const userService = {
     },
 
     /**
+     * Fetch active instructors for course assignment picker (Admin only).
+     *
+     * @returns {Promise<Array>}
+     */
+    async getActiveInstructors() {
+        return api.get(API_ENDPOINTS.ACTIVE_INSTRUCTORS);
+    },
+
+    /**
      * Update user account status (ACTIVE or DISABLED).
      *
      * @param {number|string} id

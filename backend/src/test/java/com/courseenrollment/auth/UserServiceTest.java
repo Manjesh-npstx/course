@@ -44,6 +44,7 @@ class UserServiceTest {
 
     private User adminUser;
     private User studentUser;
+    private User instructorUser;
 
     @BeforeEach
     void setUp() {
@@ -52,6 +53,9 @@ class UserServiceTest {
 
         studentUser = new User("student@test.com", "Student User", "$2a$10$hashed", UserRole.STUDENT, UserStatus.ACTIVE);
         studentUser.setId(2L);
+
+        instructorUser = new User("instructor@test.com", "Dr. Jane Instructor", "$2a$10$hashed", UserRole.INSTRUCTOR, UserStatus.ACTIVE);
+        instructorUser.setId(3L);
     }
 
     @Test
@@ -80,6 +84,21 @@ class UserServiceTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getEmail()).isEqualTo("student@test.com");
+        assertThat(result.get(0).getStatus()).isEqualTo("active");
+    }
+
+    @Test
+    @DisplayName("findActiveInstructors should return list of active instructors")
+    void findActiveInstructors_success() {
+        when(userRepository.findByRoleAndStatus(UserRole.INSTRUCTOR, UserStatus.ACTIVE))
+                .thenReturn(List.of(instructorUser));
+
+        List<UserDto> result = userService.findActiveInstructors();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getEmail()).isEqualTo("instructor@test.com");
+        assertThat(result.get(0).getName()).isEqualTo("Dr. Jane Instructor");
+        assertThat(result.get(0).getRole()).isEqualTo("instructor");
         assertThat(result.get(0).getStatus()).isEqualTo("active");
     }
 

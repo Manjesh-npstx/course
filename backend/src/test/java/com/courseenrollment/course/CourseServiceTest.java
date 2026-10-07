@@ -2,8 +2,10 @@ package com.courseenrollment.course;
 
 import com.courseenrollment.auth.entity.User;
 import com.courseenrollment.auth.enums.UserRole;
+import com.courseenrollment.auth.enums.UserStatus;
 import com.courseenrollment.auth.repository.UserRepository;
 import com.courseenrollment.common.dto.PaginatedResponse;
+import com.courseenrollment.common.exception.BadRequestException;
 import com.courseenrollment.common.exception.ConflictException;
 import com.courseenrollment.common.exception.ResourceNotFoundException;
 import com.courseenrollment.course.dto.CreateCourseRequest;
@@ -90,6 +92,65 @@ class CourseServiceTest {
         assertThat(created.getInstructor()).isEqualTo("Dr. Jane Instructor");
         assertThat(created.getInstructorEmail()).isEqualTo("instructor@test.com");
         verify(courseRepository).save(any(Course.class));
+    }
+
+    @Test
+    @DisplayName("create by admin with registered instructor should link instructor name and email")
+    void create_admin_withInstructorEmail_success() {
+        User instructor = new User("instructor@test.com", "Dr. Jane Instructor", "hashed", UserRole.INSTRUCTOR, UserStatus.ACTIVE);
+        when(userRepository.findByEmail("instructor@test.com")).thenReturn(Optional.of(instructor));
+
+        CreateCourseRequest req = new CreateCourseRequest("DevOps", "Dr. Jane Instructor", 25, "instructor@test.com");
+        Course saved = new Course("DevOps", "Dr. Jane Instructor", 25, CourseStatus.APPROVED, "instructor@test.com");
+        when(courseRepository.save(any(Course.class))).thenReturn(saved);
+
+        Course created = courseService.create(req, "admin@campus.com", UserRole.ADMIN);
+
+        assertThat(created).isNotNull();
+        assertThat(created.getInstructor()).isEqualTo("Dr. Jane Instructor");
+        assertThat(created.getInstructorEmail()).isEqualTo("instructor@test.com");
+        assertThat(created.getStatus()).isEqualTo(CourseStatus.APPROVED);
+    }
+
+    @Test
+    @DisplayName("create by admin assigning admin as instructor should throw BadRequestException")
+    void create_admin_asInstructor_throwsBadRequest() {
+        User adminUser = new User("admin@campus.com", "Admin User", "hashed", UserRole.ADMIN, UserStatus.ACTIVE);
+        when(userRepository.findByEmail("admin@campus.com")).thenReturn(Optional.of(adminUser));
+
+        CreateCourseRequest req = new CreateCourseRequest("DevOps", "Admin User", 25, "admin@campus.com");
+
+        assertThatThrownBy(() -> courseService.create(req, "admin@campus.com", UserRole.ADMIN))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("admin cannot be assigned as an instructor");
+    }
+
+    @Test
+    @DisplayName("create by admin assigning student as instructor should throw BadRequestException")
+    void create_student_asInstructor_throwsBadRequest() {
+        User studentUser = new User("student@campus.com", "Student User", "hashed", UserRole.STUDENT, UserStatus.ACTIVE);
+        when(userRepository.findByEmail("student@campus.com")).thenReturn(Optional.of(studentUser));
+
+        CreateCourseRequest req = new CreateCourseRequest("DevOps", "Student User", 25, "student@campus.com");
+
+        assertThatThrownBy(() -> courseService.create(req, "admin@campus.com", UserRole.ADMIN))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Selected user is not an instructor");
+    }
+
+    @Test
+    @DisplayName("update by admin assigning admin as instructor should throw BadRequestException")
+    void update_admin_asInstructor_throwsBadRequest() {
+        User adminUser = new User("admin@campus.com", "Admin User", "hashed", UserRole.ADMIN, UserStatus.ACTIVE);
+        when(userRepository.findByEmail("admin@campus.com")).thenReturn(Optional.of(adminUser));
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(mockCourse));
+
+        UpdateCourseRequest req = new UpdateCourseRequest();
+        req.setInstructorEmail("admin@campus.com");
+
+        assertThatThrownBy(() -> courseService.update(1L, req))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("admin cannot be assigned as an instructor");
     }
 
     @Test

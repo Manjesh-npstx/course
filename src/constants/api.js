@@ -27,5 +27,6 @@ export const API_ENDPOINTS = Object.freeze({
     STUDENT_DETAIL: (id) => `/students/${id}`,
     USERS: "/users",
     ACTIVE_STUDENTS: "/users/students",
+    ACTIVE_INSTRUCTORS: "/users/instructors",
     USER_STATUS: (id) => `/users/${id}/status`,
 });

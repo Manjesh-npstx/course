@@ -77,6 +77,13 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public List<UserDto> findActiveInstructors() {
+        return userRepository.findByRoleAndStatus(UserRole.INSTRUCTOR, UserStatus.ACTIVE).stream()
+                .map(UserDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public User findOne(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found"));

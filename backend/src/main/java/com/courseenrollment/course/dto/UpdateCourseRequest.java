@@ -21,6 +21,9 @@ public class UpdateCourseRequest {
     @Schema(example = "approved")
     private String status;
 
+    @Schema(example = "instructor1@campus.com")
+    private String instructorEmail;
+
     public UpdateCourseRequest() {
     }
 
@@ -35,6 +38,14 @@ public class UpdateCourseRequest {
         this.instructor = instructor;
         this.seatLimit = seatLimit;
         this.status = status;
+    }
+
+    public UpdateCourseRequest(String name, String instructor, Integer seatLimit, String status, String instructorEmail) {
+        this.name = name;
+        this.instructor = instructor;
+        this.seatLimit = seatLimit;
+        this.status = status;
+        this.instructorEmail = instructorEmail;
     }
 
     public String getName() {
@@ -67,5 +78,13 @@ public class UpdateCourseRequest {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getInstructorEmail() {
+        return instructorEmail;
+    }
+
+    public void setInstructorEmail(String instructorEmail) {
+        this.instructorEmail = instructorEmail;
     }
 }

@@ -2,9 +2,11 @@ package com.courseenrollment.course.service;
 
 import com.courseenrollment.auth.entity.User;
 import com.courseenrollment.auth.enums.UserRole;
+import com.courseenrollment.auth.enums.UserStatus;
 import com.courseenrollment.auth.repository.UserRepository;
 import com.courseenrollment.common.dto.PageMeta;
 import com.courseenrollment.common.dto.PaginatedResponse;
+import com.courseenrollment.common.exception.BadRequestException;
 import com.courseenrollment.common.exception.ConflictException;
 import com.courseenrollment.common.exception.ResourceNotFoundException;
 import com.courseenrollment.course.dto.CreateCourseRequest;
@@ -46,16 +48,58 @@ public class CourseService {
     @Transactional
     public Course create(CreateCourseRequest req, String userEmail, UserRole role) {
         String instructorName;
-        if (role == UserRole.INSTRUCTOR && userEmail != null && userRepository != null) {
-            instructorName = userRepository.findByEmail(userEmail)
-                    .map(User::getName)
-                    .orElseGet(() -> (req.getInstructor() != null && !req.getInstructor().trim().isEmpty())
+        String instructorEmail;
+
+        if (role == UserRole.INSTRUCTOR) {
+            instructorEmail = userEmail;
+            instructorName = (userEmail != null && userRepository != null)
+                    ? userRepository.findByEmail(userEmail)
+                            .map(User::getName)
+                            .orElseGet(() -> (req.getInstructor() != null && !req.getInstructor().trim().isEmpty())
+                                    ? req.getInstructor().trim()
+                                    : userEmail)
+                    : ((req.getInstructor() != null && !req.getInstructor().trim().isEmpty())
                             ? req.getInstructor().trim()
                             : userEmail);
         } else {
-            instructorName = (req.getInstructor() != null && !req.getInstructor().trim().isEmpty())
-                    ? req.getInstructor().trim()
-                    : (userEmail != null ? userEmail : "Instructor");
+            // Admin is creating the course
+            // Admin cannot be instructor; instructor must be registered active instructor
+            String targetEmail = (req.getInstructorEmail() != null && !req.getInstructorEmail().trim().isEmpty())
+                    ? req.getInstructorEmail().trim()
+                    : null;
+
+            java.util.Optional<User> instructorOpt = java.util.Optional.empty();
+            if (targetEmail != null && userRepository != null) {
+                instructorOpt = userRepository.findByEmail(targetEmail);
+                if (instructorOpt.isEmpty()) {
+                    throw new BadRequestException("Instructor not found with email: " + targetEmail);
+                }
+            } else if (req.getInstructor() != null && !req.getInstructor().trim().isEmpty() && userRepository != null) {
+                instructorOpt = userRepository.findByEmail(req.getInstructor().trim());
+            }
+
+            if (instructorOpt.isPresent()) {
+                User instUser = instructorOpt.get();
+                if (instUser.getRole() == UserRole.ADMIN) {
+                    throw new BadRequestException("An admin cannot be assigned as an instructor.");
+                }
+                if (instUser.getRole() != UserRole.INSTRUCTOR) {
+                    throw new BadRequestException("Selected user is not an instructor.");
+                }
+                if (instUser.getStatus() != UserStatus.ACTIVE) {
+                    throw new BadRequestException("Selected instructor account is disabled.");
+                }
+                instructorName = instUser.getName();
+                instructorEmail = instUser.getEmail();
+            } else {
+                if (userEmail != null && userEmail.equalsIgnoreCase(req.getInstructor() != null ? req.getInstructor().trim() : "")) {
+                    throw new BadRequestException("An admin cannot be assigned as an instructor.");
+                }
+                instructorName = (req.getInstructor() != null && !req.getInstructor().trim().isEmpty())
+                        ? req.getInstructor().trim()
+                        : "Instructor";
+                instructorEmail = null;
+            }
         }
 
         CourseStatus initialStatus = (role == UserRole.INSTRUCTOR)
@@ -67,7 +111,7 @@ public class CourseService {
                 instructorName,
                 req.getSeatLimit(),
                 initialStatus,
-                userEmail
+                instructorEmail
         );
         return courseRepository.save(course);
     }
@@ -223,8 +267,44 @@ public class CourseService {
             course.setName(req.getName().trim());
         }
 
-        if (req.getInstructor() != null && !req.getInstructor().trim().isEmpty()) {
-            course.setInstructor(req.getInstructor().trim());
+        if (req.getInstructorEmail() != null && !req.getInstructorEmail().trim().isEmpty()) {
+            if (userRepository != null) {
+                User instUser = userRepository.findByEmail(req.getInstructorEmail().trim())
+                        .orElseThrow(() -> new BadRequestException("Instructor not found with email: " + req.getInstructorEmail().trim()));
+                if (instUser.getRole() == UserRole.ADMIN) {
+                    throw new BadRequestException("An admin cannot be assigned as an instructor.");
+                }
+                if (instUser.getRole() != UserRole.INSTRUCTOR) {
+                    throw new BadRequestException("Selected user is not an instructor.");
+                }
+                if (instUser.getStatus() != UserStatus.ACTIVE) {
+                    throw new BadRequestException("Selected instructor account is disabled.");
+                }
+                course.setInstructor(instUser.getName());
+                course.setInstructorEmail(instUser.getEmail());
+            }
+        } else if (req.getInstructor() != null && !req.getInstructor().trim().isEmpty()) {
+            if (userRepository != null) {
+                java.util.Optional<User> instOpt = userRepository.findByEmail(req.getInstructor().trim());
+                if (instOpt.isPresent()) {
+                    User instUser = instOpt.get();
+                    if (instUser.getRole() == UserRole.ADMIN) {
+                        throw new BadRequestException("An admin cannot be assigned as an instructor.");
+                    }
+                    if (instUser.getRole() != UserRole.INSTRUCTOR) {
+                        throw new BadRequestException("Selected user is not an instructor.");
+                    }
+                    if (instUser.getStatus() != UserStatus.ACTIVE) {
+                        throw new BadRequestException("Selected instructor account is disabled.");
+                    }
+                    course.setInstructor(instUser.getName());
+                    course.setInstructorEmail(instUser.getEmail());
+                } else {
+                    course.setInstructor(req.getInstructor().trim());
+                }
+            } else {
+                course.setInstructor(req.getInstructor().trim());
+            }
         }
 
         if (req.getStatus() != null && !req.getStatus().trim().isEmpty()) {

@@ -23,13 +23,21 @@ public class CreateCourseRequest {
     @Min(value = 1, message = "seatLimit must not be less than 1")
     private Integer seatLimit;
 
+    @Schema(example = "instructor1@campus.com")
+    private String instructorEmail;
+
     public CreateCourseRequest() {
     }
 
     public CreateCourseRequest(String name, String instructor, Integer seatLimit) {
+        this(name, instructor, seatLimit, null);
+    }
+
+    public CreateCourseRequest(String name, String instructor, Integer seatLimit, String instructorEmail) {
         this.name = name;
         this.instructor = instructor;
         this.seatLimit = seatLimit;
+        this.instructorEmail = instructorEmail;
     }
 
     public String getName() {
@@ -54,5 +62,13 @@ public class CreateCourseRequest {
 
     public void setSeatLimit(Integer seatLimit) {
         this.seatLimit = seatLimit;
+    }
+
+    public String getInstructorEmail() {
+        return instructorEmail;
+    }
+
+    public void setInstructorEmail(String instructorEmail) {
+        this.instructorEmail = instructorEmail;
     }
 }
