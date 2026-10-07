@@ -145,7 +145,7 @@ public class CourseController {
         return ResponseEntity.ok(course);
     }
 
-    @PatchMapping("/{id}")
+    @RequestMapping(value = "/{id}", method = {RequestMethod.PATCH, RequestMethod.PUT})
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Update a course (Admin or course instructor)")

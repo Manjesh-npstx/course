@@ -117,6 +117,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiErrorResponse> handleMethodNotSupported(org.springframework.web.HttpRequestMethodNotSupportedException ex) {
+        ApiErrorResponse body = new ApiErrorResponse(
+                HttpStatus.METHOD_NOT_ALLOWED.value(),
+                ex.getMessage(),
+                "Method Not Allowed"
+        );
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneralException(Exception ex) {
         ApiErrorResponse body = new ApiErrorResponse(
