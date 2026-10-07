@@ -69,6 +69,7 @@ export function CourseTable({
                     </tr>
                 </thead>
                 <tbody>
+                    {courses.map((course) => {
                         const isOwn =
                             isInstructor &&
                             ((course.instructorEmail &&
