@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Alert from "@/components/common/Alert";
 import Badge from "@/components/common/Badge";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import { AUTH_MESSAGES } from "@/constants/messages";
+import { ROUTES } from "@/constants/routes";
 import PasswordRequirements from "@/features/auth/PasswordRequirements";
 import { passwordSchema } from "@/features/auth/registerSchema";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,7 +20,8 @@ const phoneRegex = /^[+]?[0-9\s\-().]{7,20}$/;
  * authenticated password reset (Old Password, New Password, Confirm Password).
  */
 function ProfilePage() {
-    const { user: authUser, updateUser } = useAuth();
+    const navigate = useNavigate();
+    const { user: authUser, updateUser, logout } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = searchParams.get("tab") === "reset-password" ? "reset-password" : "profile";
 
@@ -256,16 +258,15 @@ function ProfilePage() {
                 oldPassword: passwordForm.oldPassword,
                 newPassword: passwordForm.newPassword,
             });
-            setPasswordSuccess("Password has been reset successfully.");
-            setPasswordForm({
-                oldPassword: "",
-                newPassword: "",
-                confirmPassword: "",
+            logout();
+            navigate(ROUTES.LOGIN, {
+                state: { message: AUTH_MESSAGES.RESET_PASSWORD_SUCCESS },
             });
-            setPasswordErrors({});
         } catch (err) {
-            setPasswordError(err.message || "Failed to reset password. Please verify your old password.");
-        } finally {
+            setPasswordError(
+                err.message ||
+                    "Failed to reset password. Please verify your old password."
+            );
             setIsResettingPassword(false);
         }
     }
