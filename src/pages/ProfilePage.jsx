@@ -303,7 +303,19 @@ function ProfilePage() {
                 {activeTab === "profile" && (
                     <div className="profile-card">
                         <div className="profile-header-row">
-                            <h2 className="section-title">Profile Information</h2>
+                            <div className="profile-title-badges">
+                                <h2 className="section-title">Profile Information</h2>
+                                <Badge
+                                    variant={
+                                        (profile.status || "active").toLowerCase() ===
+                                        "active"
+                                            ? "success"
+                                            : "danger"
+                                    }
+                                >
+                                    {(profile.status || "active").toUpperCase()}
+                                </Badge>
+                            </div>
                             <div className="profile-action-group">
                                 {!isEditing && (
                                     <>
@@ -407,22 +419,6 @@ function ProfilePage() {
                                     <span className="profile-detail-value">
                                         <Badge variant={getRoleBadgeVariant(profile.role)}>
                                             {(profile.role || "student").toUpperCase()}
-                                        </Badge>
-                                    </span>
-                                </div>
-
-                                <div className="profile-detail-item">
-                                    <span className="profile-detail-label">Account Status</span>
-                                    <span className="profile-detail-value">
-                                        <Badge
-                                            variant={
-                                                (profile.status || "active").toLowerCase() ===
-                                                "active"
-                                                    ? "success"
-                                                    : "danger"
-                                            }
-                                        >
-                                            {(profile.status || "active").toUpperCase()}
                                         </Badge>
                                     </span>
                                 </div>

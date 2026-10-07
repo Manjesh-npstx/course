@@ -70,17 +70,23 @@
     gap: var(--spacing-small);
 }
 
+.profile-title-badges {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .profile-details-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: var(--spacing-large);
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 32px;
     margin-bottom: var(--spacing-large);
 }
 
 .profile-detail-item {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .profile-detail-label {
@@ -95,6 +101,7 @@
     font-size: 15px;
     font-weight: 500;
     color: var(--text);
+    min-height: 28px;
     display: flex;
     align-items: center;
     gap: var(--spacing-small);
