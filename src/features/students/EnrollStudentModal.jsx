@@ -105,7 +105,13 @@ export function EnrollStudentModal({
                             htmlFor="enroll-student-select"
                             className="input-label"
                         >
-                            Select Registered Student <span className="required-asterisk" aria-hidden="true">*</span>
+                            Select Registered Student{" "}
+                            <span
+                                className="required-asterisk"
+                                aria-hidden="true"
+                            >
+                                *
+                            </span>
                         </label>
                         <select
                             id="enroll-student-select"
@@ -141,7 +147,13 @@ export function EnrollStudentModal({
                             htmlFor="enroll-course-select"
                             className="input-label"
                         >
-                            Select Course <span className="required-asterisk" aria-hidden="true">*</span>
+                            Select Course{" "}
+                            <span
+                                className="required-asterisk"
+                                aria-hidden="true"
+                            >
+                                *
+                            </span>
                         </label>
                         <select
                             id="enroll-course-select"

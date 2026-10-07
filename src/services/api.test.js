@@ -103,8 +103,6 @@ describe("api client interceptors", () => {
         };
 
         const responseInterceptor = api.interceptors.response.handlers[0];
-        // Mock api call to simulate retry
-        const apiSpy = vi.spyOn(api, "request").mockResolvedValue({ success: true });
 
         await responseInterceptor.rejected(error401);
 

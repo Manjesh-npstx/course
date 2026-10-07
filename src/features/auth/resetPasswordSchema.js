@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { AUTH_LIMITS } from "@/constants/limits";
 import { AUTH_MESSAGES } from "@/constants/messages";
 import { passwordSchema } from "./registerSchema";
 

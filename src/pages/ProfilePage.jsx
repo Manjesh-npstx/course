@@ -23,7 +23,10 @@ function ProfilePage() {
     const navigate = useNavigate();
     const { user: authUser, updateUser, logout } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = searchParams.get("tab") === "reset-password" ? "reset-password" : "profile";
+    const activeTab =
+        searchParams.get("tab") === "reset-password"
+            ? "reset-password"
+            : "profile";
 
     const [profile, setProfile] = useState(authUser || {});
     const [loading, setLoading] = useState(true);
@@ -68,7 +71,9 @@ function ProfilePage() {
             })
             .catch((err) => {
                 if (isMounted) {
-                    setServerError(err.message || "Failed to load latest profile details");
+                    setServerError(
+                        err.message || "Failed to load latest profile details"
+                    );
                 }
             })
             .finally(() => {
@@ -81,7 +86,9 @@ function ProfilePage() {
     }, [updateUser]);
 
     function handleTabChange(tab) {
-        setSearchParams(tab === "reset-password" ? { tab: "reset-password" } : {});
+        setSearchParams(
+            tab === "reset-password" ? { tab: "reset-password" } : {}
+        );
         setServerError("");
         setSuccessMessage("");
         setPasswordError("");
@@ -140,7 +147,8 @@ function ProfilePage() {
         setSuccessMessage("");
 
         const nameValid = editForm.name && editForm.name.trim().length >= 2;
-        const phoneValid = editForm.phone && phoneRegex.test(editForm.phone.trim());
+        const phoneValid =
+            editForm.phone && phoneRegex.test(editForm.phone.trim());
 
         if (!nameValid || !phoneValid) {
             setEditErrors({
@@ -197,9 +205,12 @@ function ProfilePage() {
             const check = passwordSchema.safeParse(value);
             setPasswordErrors((prev) => ({
                 ...prev,
-                newPassword: check.success ? "" : check.error.issues[0]?.message || "",
+                newPassword: check.success
+                    ? ""
+                    : check.error.issues[0]?.message || "",
                 confirmPassword:
-                    nextForm.confirmPassword && value !== nextForm.confirmPassword
+                    nextForm.confirmPassword &&
+                    value !== nextForm.confirmPassword
                         ? AUTH_MESSAGES.PASSWORDS_DO_NOT_MATCH
                         : "",
             }));
@@ -304,11 +315,14 @@ function ProfilePage() {
                     <div className="profile-card">
                         <div className="profile-header-row">
                             <div className="profile-title-badges">
-                                <h2 className="section-title">Profile Information</h2>
+                                <h2 className="section-title">
+                                    Profile Information
+                                </h2>
                                 <Badge
                                     variant={
-                                        (profile.status || "active").toLowerCase() ===
-                                        "active"
+                                        (
+                                            profile.status || "active"
+                                        ).toLowerCase() === "active"
                                             ? "success"
                                             : "danger"
                                     }
@@ -332,7 +346,11 @@ function ProfilePage() {
                                         <Button
                                             size="small"
                                             variant="secondary"
-                                            onClick={() => handleTabChange("reset-password")}
+                                            onClick={() =>
+                                                handleTabChange(
+                                                    "reset-password"
+                                                )
+                                            }
                                         >
                                             Reset Password
                                         </Button>
@@ -345,9 +363,15 @@ function ProfilePage() {
                         <Alert>{serverError}</Alert>
 
                         {loading ? (
-                            <p className="card-subtitle">Loading profile details...</p>
+                            <p className="card-subtitle">
+                                Loading profile details...
+                            </p>
                         ) : isEditing ? (
-                            <form onSubmit={handleSaveProfile} noValidate className="profile-form">
+                            <form
+                                onSubmit={handleSaveProfile}
+                                noValidate
+                                className="profile-form"
+                            >
                                 <Input
                                     id="profile-name"
                                     name="name"
@@ -378,8 +402,13 @@ function ProfilePage() {
                                     required
                                 />
                                 <div className="profile-form-actions">
-                                    <Button type="submit" disabled={isSavingProfile}>
-                                        {isSavingProfile ? "Saving..." : "Save Changes"}
+                                    <Button
+                                        type="submit"
+                                        disabled={isSavingProfile}
+                                    >
+                                        {isSavingProfile
+                                            ? "Saving..."
+                                            : "Save Changes"}
                                     </Button>
                                     <Button
                                         type="button"
@@ -394,34 +423,80 @@ function ProfilePage() {
                         ) : (
                             <div className="profile-details-list">
                                 <div className="profile-detail-item">
-                                    <span className="profile-detail-label">Full Name</span>
+                                    <span className="profile-detail-label">
+                                        Full Name
+                                    </span>
                                     <span className="profile-detail-value">
                                         {profile.name || "—"}
                                     </span>
                                 </div>
 
                                 <div className="profile-detail-item">
-                                    <span className="profile-detail-label">Email Address</span>
+                                    <span className="profile-detail-label">
+                                        Email Address
+                                    </span>
                                     <span className="profile-detail-value">
                                         {profile.email || "—"}
                                     </span>
                                 </div>
 
                                 <div className="profile-detail-item">
-                                    <span className="profile-detail-label">Mobile Number</span>
+                                    <span className="profile-detail-label">
+                                        Mobile Number
+                                    </span>
                                     <span className="profile-detail-value">
                                         {profile.phone || "Not provided"}
                                     </span>
                                 </div>
 
                                 <div className="profile-detail-item">
-                                    <span className="profile-detail-label">Role</span>
+                                    <span className="profile-detail-label">
+                                        Role
+                                    </span>
                                     <span className="profile-detail-value">
-                                        <Badge variant={getRoleBadgeVariant(profile.role)}>
-                                            {(profile.role || "student").toUpperCase()}
+                                        <Badge
+                                            variant={getRoleBadgeVariant(
+                                                profile.role
+                                            )}
+                                        >
+                                            {(
+                                                profile.role || "student"
+                                            ).toUpperCase()}
                                         </Badge>
                                     </span>
                                 </div>
+
+                                {(!profile.role ||
+                                    profile.role.toLowerCase() ===
+                                        "student") && (
+                                    <div className="profile-detail-item">
+                                        <span className="profile-detail-label">
+                                            Enrolled Courses
+                                        </span>
+                                        <span className="profile-detail-value">
+                                            {profile.enrolledCourses &&
+                                            profile.enrolledCourses.length >
+                                                0 ? (
+                                                <span className="profile-courses-tags">
+                                                    {profile.enrolledCourses.map(
+                                                        (c) => (
+                                                            <Badge
+                                                                key={c}
+                                                                variant="neutral"
+                                                            >
+                                                                {c}
+                                                            </Badge>
+                                                        )
+                                                    )}
+                                                </span>
+                                            ) : (
+                                                <span className="text-muted">
+                                                    No courses enrolled yet
+                                                </span>
+                                            )}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -432,9 +507,13 @@ function ProfilePage() {
                     <div className="profile-card">
                         <div className="profile-header-row">
                             <div>
-                                <h2 className="section-title">Reset Password</h2>
+                                <h2 className="section-title">
+                                    Reset Password
+                                </h2>
                                 <p className="card-subtitle">
-                                    Enter your old password, enter your new password, and confirm new password to update.
+                                    Enter your old password, enter your new
+                                    password, and confirm new password to
+                                    update.
                                 </p>
                             </div>
                         </div>
@@ -442,7 +521,11 @@ function ProfilePage() {
                         <Alert type="success">{passwordSuccess}</Alert>
                         <Alert>{passwordError}</Alert>
 
-                        <form onSubmit={handleResetPassword} noValidate className="profile-form">
+                        <form
+                            onSubmit={handleResetPassword}
+                            noValidate
+                            className="profile-form"
+                        >
                             <Input
                                 id="oldPassword"
                                 name="oldPassword"
@@ -467,7 +550,9 @@ function ProfilePage() {
                                 disabled={isResettingPassword}
                                 required
                             />
-                            <PasswordRequirements password={passwordForm.newPassword} />
+                            <PasswordRequirements
+                                password={passwordForm.newPassword}
+                            />
                             <Input
                                 id="confirmPassword"
                                 name="confirmPassword"
@@ -481,8 +566,13 @@ function ProfilePage() {
                                 required
                             />
                             <div className="profile-form-actions">
-                                <Button type="submit" disabled={isResettingPassword}>
-                                    {isResettingPassword ? "Resetting Password..." : "Reset Password"}
+                                <Button
+                                    type="submit"
+                                    disabled={isResettingPassword}
+                                >
+                                    {isResettingPassword
+                                        ? "Resetting Password..."
+                                        : "Reset Password"}
                                 </Button>
                             </div>
                         </form>

@@ -129,7 +129,9 @@ describe("authService", () => {
     });
 
     it("refreshToken throws error when no refresh token stored", async () => {
-        await expect(authService.refreshToken()).rejects.toThrow("No refresh token available");
+        await expect(authService.refreshToken()).rejects.toThrow(
+            "No refresh token available"
+        );
     });
 
     it("logout clears stored token, refresh token, and user data", async () => {

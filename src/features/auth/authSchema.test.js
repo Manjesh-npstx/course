@@ -236,11 +236,17 @@ describe("resetPasswordSchema", () => {
 
     it("validates reset password fields in real-time", () => {
         expect(validateResetPasswordField("email", "invalid", {})).not.toBe("");
-        expect(validateResetPasswordField("email", "user@campus.com", {})).toBe("");
+        expect(validateResetPasswordField("email", "user@campus.com", {})).toBe(
+            ""
+        );
         expect(validateResetPasswordField("phone", "12", {})).not.toBe("");
         expect(validateResetPasswordField("phone", "9876543210", {})).toBe("");
-        expect(validateResetPasswordField("newPassword", "short", {})).not.toBe("");
-        expect(validateResetPasswordField("newPassword", "SecurePass@123", {})).toBe("");
+        expect(validateResetPasswordField("newPassword", "short", {})).not.toBe(
+            ""
+        );
+        expect(
+            validateResetPasswordField("newPassword", "SecurePass@123", {})
+        ).toBe("");
         expect(
             validateResetPasswordField("confirmPassword", "mismatch", {
                 newPassword: "SecurePass@123",

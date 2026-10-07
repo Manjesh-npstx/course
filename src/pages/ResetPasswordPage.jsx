@@ -57,7 +57,9 @@ function ResetPasswordPage() {
 
         const result = resetPasswordSchema.safeParse(formData);
         if (!result.success) {
-            setErrors(mapResetPasswordErrors(result.error.flatten().fieldErrors));
+            setErrors(
+                mapResetPasswordErrors(result.error.flatten().fieldErrors)
+            );
             return;
         }
 
@@ -74,7 +76,10 @@ function ResetPasswordPage() {
                 state: { message: AUTH_MESSAGES.RESET_PASSWORD_SUCCESS },
             });
         } catch (err) {
-            setServerError(err.message || "Failed to reset password. Please check your details.");
+            setServerError(
+                err.message ||
+                    "Failed to reset password. Please check your details."
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -89,7 +94,8 @@ function ResetPasswordPage() {
             <div className="card-header">
                 <h1 className="card-title">Reset Password</h1>
                 <p className="card-subtitle">
-                    Verify your registered email and mobile number to set a new password
+                    Verify your registered email and mobile number to set a new
+                    password
                 </p>
             </div>
 

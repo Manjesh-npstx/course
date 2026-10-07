@@ -105,8 +105,11 @@ api.interceptors.response.use(
                         onAuthErrorCallback();
                     }
                     const rawMessage =
-                        refreshErr.response?.data?.message || refreshErr.message;
-                    const normalized = new Error(rawMessage || "Session expired");
+                        refreshErr.response?.data?.message ||
+                        refreshErr.message;
+                    const normalized = new Error(
+                        rawMessage || "Session expired"
+                    );
                     normalized.status = 401;
                     return Promise.reject(normalized);
                 } finally {

@@ -91,7 +91,8 @@ export const authService = {
 
     async resetUserPassword(passwordData) {
         const payload = {
-            oldPassword: passwordData.oldPassword || passwordData.currentPassword,
+            oldPassword:
+                passwordData.oldPassword || passwordData.currentPassword,
             newPassword: passwordData.newPassword,
         };
         return api.post(API_ENDPOINTS.CHANGE_PASSWORD, payload);

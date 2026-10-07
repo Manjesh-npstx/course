@@ -108,6 +108,12 @@
     word-break: break-word;
 }
 
+.profile-courses-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
 .profile-form {
     display: flex;
     flex-direction: column;

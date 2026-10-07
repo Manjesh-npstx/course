@@ -11,8 +11,20 @@ export const INITIAL_REGISTER_FORM = {
 };
 
 export const REGISTER_FIELDS = [
-    { id: "name", name: "name", label: "Full Name *", type: "text", required: true },
-    { id: "email", name: "email", label: "Email *", type: "email", required: true },
+    {
+        id: "name",
+        name: "name",
+        label: "Full Name *",
+        type: "text",
+        required: true,
+    },
+    {
+        id: "email",
+        name: "email",
+        label: "Email *",
+        type: "email",
+        required: true,
+    },
     {
         id: "phone",
         name: "phone",
@@ -21,7 +33,13 @@ export const REGISTER_FIELDS = [
         placeholder: "e.g. 9876543210",
         required: true,
     },
-    { id: "password", name: "password", label: "Password *", type: "password", required: true },
+    {
+        id: "password",
+        name: "password",
+        label: "Password *",
+        type: "password",
+        required: true,
+    },
     {
         id: "confirmPassword",
         name: "confirmPassword",

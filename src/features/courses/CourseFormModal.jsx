@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import Alert from "@/components/common/Alert";
 import Button from "@/components/common/Button";
@@ -24,16 +24,6 @@ export function CourseFormModal({
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    useEffect(() => {
-        if (isInstructorFixed) {
-            if (course?.instructor) {
-                setInstructor(course.instructor);
-            } else if (defaultInstructor) {
-                setInstructor(defaultInstructor);
-            }
-        }
-    }, [isInstructorFixed, course, defaultInstructor]);
-
     async function handleSubmit(event) {
         event.preventDefault();
         setError("");
@@ -43,7 +33,12 @@ export function CourseFormModal({
             return;
         }
         const effectiveInstructor = isInstructorFixed
-            ? (course?.instructor || defaultInstructor || instructor || "").trim()
+            ? (
+                  course?.instructor ||
+                  defaultInstructor ||
+                  instructor ||
+                  ""
+              ).trim()
             : instructor.trim();
 
         if (!effectiveInstructor) {
@@ -94,7 +89,9 @@ export function CourseFormModal({
                     placeholder="e.g. Dr. Jane Doe"
                     value={
                         isInstructorFixed
-                            ? (course?.instructor || defaultInstructor || instructor)
+                            ? course?.instructor ||
+                              defaultInstructor ||
+                              instructor
                             : instructor
                     }
                     onChange={(e) => setInstructor(e.target.value)}

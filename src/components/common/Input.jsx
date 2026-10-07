@@ -24,14 +24,20 @@ function formatLabel(label, required) {
         const text = label.slice(0, -1).trimEnd();
         return (
             <>
-                {text} <span className="required-asterisk" aria-hidden="true">*</span>
+                {text}{" "}
+                <span className="required-asterisk" aria-hidden="true">
+                    *
+                </span>
             </>
         );
     }
     if (required) {
         return (
             <>
-                {label} <span className="required-asterisk" aria-hidden="true">*</span>
+                {label}{" "}
+                <span className="required-asterisk" aria-hidden="true">
+                    *
+                </span>
             </>
         );
     }
